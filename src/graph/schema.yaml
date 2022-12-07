@@ -1,0 +1,137 @@
+graph:
+  components: map(include('component'), key=regex(r"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"))
+  flows: map(include('flow'), key=regex(r"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"))
+deploy: bool(required=False)
+
+---
+
+componentName: include('k8sRegex')
+
+---
+
+component:
+  chart: include('chart')
+  config: map(any(), key=str())
+  inputs: map(any(include('volumeInput'), include('pulsarInput'), include('repositoryInput')), key=regex(r"^[a-zA-Z0-9_-]*$"))
+  outputs: map(any(include('volumeOutput'), include('pulsarOutput'), include('repositoryOutput')), key=regex(r"^[a-zA-Z0-9_-]*$"))
+  namespace: include('k8sRegex', required=False)
+  type: str(required=False)
+  needs: list(include('componentName'), required=False)
+  $ui: any(required=False)
+  ingressNeeded: bool(required=False)
+  auxConfig: map(any(), key=str(), required=False)
+
+---
+
+chart:
+  repo: str()
+  name: str()
+  version: any(include('semverRegex'), regex("latest"), required=False)
+  secret: include("secretRef", required=False)
+
+---
+
+secretRef:
+  name: any(include('k8sRegex'), include('nullRegex'), null())
+
+---
+
+volumeInput:
+  type: regex("volume")
+  config:
+    include('volumeConfig', required=False)
+  flow: include('k8sRegex')
+  $ui: any(required=False)
+
+pulsarInput:
+  type: regex("pulsar")
+  config: map(required=False)
+  flow: include('k8sRegex')
+  $ui: any(required=False)
+
+repositoryInput:
+  type: regex("repository")
+  config:
+    include('volumeConfig', required=False)
+  flow: include('k8sRegex')
+  $ui: any(required=False)
+
+volumeOutput:
+  type: regex("volume")
+  config:
+    include('volumeConfig', required=False)
+  flow: include('k8sRegex')
+  $ui: any(required=False)
+
+pulsarOutput:
+  type: regex("pulsar")
+  config: map(required=False)
+  flow: include('k8sRegex')
+  $ui: any(required=False)
+
+repositoryOutput:
+  type: regex("repository")
+  config:
+    include('volumeConfig', required=False)
+  flow: include('k8sRegex')
+  $ui: any(required=False)
+
+---
+
+volumeConfig:
+  mountPath: str(required=False)
+
+---
+
+flow:
+  any(include('volumeFlow'), include('pulsarFlow'), include('repositoryFlow'))
+
+---
+
+volumeFlow:
+  type: enum('volume')
+  config: &VOLUME_CONFIG
+    size: str()
+    reclaimPolicy: enum('Retain', 'Delete', required=False)
+  $ui: any(required=False)
+
+# TODO: implement reclaim policy for pulsar flow
+pulsarFlow:
+  type: enum('pulsar')
+  config: map(required=False)
+  $ui: any(required=False)
+
+repositoryFlow:
+  type: enum('repository')
+  config: any(include('gitFlowConfig'), include('dvcFlowConfig'))
+  $ui: any(required=False)
+
+gitFlowConfig:
+  <<: *VOLUME_CONFIG
+  kind: enum('git')
+  remote: str(required=False)
+  secret: str(required=False)
+  username: str(required=False)
+  useremail: str(required=False)
+  defaultBranch: str(required=False)
+
+dvcFlowConfig:
+  <<: *VOLUME_CONFIG
+  kind: enum('dvc')
+  remote: str(required=False)
+  secret: str(required=False)
+  username: str(required=False)
+  useremail: str(required=False)
+  defaultBranch: str(required=False)
+  storageRemote: str(required=False)
+  storageRemoteName: str(required=False)
+  storageSecret: str(required=False)
+  storageSecretType: enum('s3', required=False)
+
+---
+
+# Official regex for Semver https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+semverRegex: regex(r"^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$")
+
+k8sRegex: regex(r"^[a-z0-9]([-a-z0-9]*[a-z0-9])?$")
+nullRegex: regex(r"(None)|(null)")

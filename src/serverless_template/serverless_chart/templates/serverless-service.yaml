@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-serverless
+  labels:
+    service: serverless
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    app: serverless
+    release: {{ .Release.Name }}
+  ports:
+  - port: 8080
+    targetPort: 8080

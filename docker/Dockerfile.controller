@@ -1,0 +1,28 @@
+FROM --platform=linux/amd64 python:3.9-slim
+RUN apt update && apt install -y python3.9-dev gcc musl-dev
+
+COPY src/mutating_webhook/requirements.txt requirements.txt
+RUN python3 -m pip install -r requirements.txt --no-cache-dir
+
+COPY src/graph/requirements.txt requirements.txt
+RUN python3 -m pip install -r requirements.txt --no-cache-dir
+
+RUN apt update && apt install -y curl git wget
+RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && \
+    chmod 700 get_helm.sh && \
+    ./get_helm.sh && \
+    helm plugin install https://github.com/databus23/helm-diff
+
+RUN wget https://github.com/roboll/helmfile/releases/download/v0.144.0/helmfile_linux_amd64 -O /bin/helmfile && \
+    chmod +x /bin/helmfile
+
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    install -o root -g root -m 0755 kubectl /usr/bin/kubectl
+RUN apt remove -y curl git wget
+
+COPY src/graph graph
+
+COPY src/mutating_webhook mutating_webhook
+
+COPY src/graph_service/flows src/graph_service/flows 
+WORKDIR /

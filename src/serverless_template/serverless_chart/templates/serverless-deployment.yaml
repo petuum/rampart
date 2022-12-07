@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-serverless
+  labels:
+    app: serverless
+    release: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: serverless
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: serverless
+        release: {{ .Release.Name }}
+    spec:
+      volumes:
+      - name: {{ .Release.Name }}-serverless-pv-storage
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-serverless-pvc
+      containers:
+      - name: serverless-container
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag}}
+        imagePullPolicy: {{ .Values.image.imagePullPolicy }}
+        ports:
+        - containerPort: 80
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: "/mount"
+          name: {{ .Release.Name }}-serverless-pv-storage
+      imagePullSecrets:
+      - name: stagingsecret

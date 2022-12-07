@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-test-component
+  labels:
+    component: {{ $.Release.Name }}-test-component
+    app: {{ $.Release.Name }}-test-component
+    release: {{ $.Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-test-component
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-test-component
+        component: {{ $.Release.Name }}-test-component
+        release: {{ $.Release.Name }}
+    spec:
+      containers:
+        - name: app
+          image: {{ .Values.rampart.registry }}/dev/rampart/test_service:{{ .Chart.AppVersion }}
+          imagePullPolicy: Always
+          resources: {}
+          command:
+          - bash
+          - -c
+          - '(python3 pulsar_producer.py & ) && (python3 pulsar_consumer.py & ) && uvicorn test_component:app --port "8000" --host "0.0.0.0"'
+          env:
+          - name: COMPONENT_NAME
+            value: {{ .Values.component_name }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+      imagePullSecrets:
+      - name: stagingsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-test-component
+  labels:
+    component: {{ $.Release.Name }}-test-component
+    app: {{ $.Release.Name }}-test-component
+    release: {{ $.Release.Name }}
+spec:
+  ports:
+    - port: 8000
+      targetPort: 8000 
+      name: http
+  selector:
+    app: {{ $.Release.Name }}-test-component
+    release: {{ $.Release.Name }}

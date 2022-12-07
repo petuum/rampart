@@ -1,0 +1,6 @@
+# TODO: Add jupyter and serverless related values
+image:
+  repository: registry.petuum.com/dev/rampart/serverless
+  tag: 0.1
+  imagePullPolicy: Always
+  imagePullSecret: # Add b64 encoded dockerconfigjson here

@@ -1,0 +1,4799 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rampart.petuum.com/rampart-schemas/example.json",
+  "allOf": [
+    {
+      "$ref": "#/$defs/root"
+    }
+  ],
+  "$defs": {
+    "root": {
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "type": "string",
+          "default": "rampart.petuum.com/v1beta1"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        },
+        "spec": {
+          "$ref": "#/$defs/spec"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "apiVersion",
+        "kind",
+        "metadata",
+        "spec"
+      ]
+    },
+    "spec": {
+      "type": "object",
+      "properties": {
+        "graph": {
+          "$ref": "#/$defs/graph"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "graph"
+      ]
+    },
+    "metadata": {
+      "description": "ObjectMeta is metadata that all persisted resources must have, which includes all objects users must create.",
+      "properties": {
+        "annotations": {
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. They are not queryable and should be preserved when modifying objects. More info: http://kubernetes.io/docs/user-guide/annotations",
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "clusterName": {
+          "description": "The name of the cluster which the object belongs to. This is used to distinguish resources with same name and namespace in different clusters. This field is not set anywhere right now and apiserver is going to ignore it if set in create or update request.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "creationTimestamp": {
+          "description": "Time is a wrapper around time.Time which supports correct marshaling to YAML and JSON.  Wrappers are provided for many of the factory methods that the time package offers.",
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deletionGracePeriodSeconds": {
+          "description": "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened. Read-only.",
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "deletionTimestamp": {
+          "description": "Time is a wrapper around time.Time which supports correct marshaling to YAML and JSON.  Wrappers are provided for many of the factory methods that the time package offers.",
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "finalizers": {
+          "description": "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list. If the deletionTimestamp of the object is non-nil, entries in this list can only be removed. Finalizers may be processed and removed in any order.  Order is NOT enforced because it introduces significant risk of stuck finalizers. finalizers is a shared field, any actor with permission can reorder it. If the finalizer list is processed in order, then this can lead to a situation in which the component responsible for the first finalizer in the list is waiting for a signal (field value, external system, or other) produced by a component responsible for a finalizer later in the list, resulting in a deadlock. Without enforced ordering finalizers are free to order amongst themselves and are not vulnerable to ordering changes in the list.",
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ],
+          "x-kubernetes-patch-strategy": "merge"
+        },
+        "generateName": {
+          "description": "GenerateName is an optional prefix, used by the server, to generate a unique name ONLY IF the Name field has not been provided. If this field is used, the name returned to the client will be different than the name passed. This value will also be combined with a unique suffix. The provided value has the same validation rules as the Name field, and may be truncated by the length of the suffix required to make the value unique on the server.\n\nIf this field is specified and the generated name exists, the server will NOT return a 409 - instead, it will either return 201 Created or 500 with Reason ServerTimeout indicating a unique name could not be found in the time allotted, and the client should retry (optionally after the time indicated in the Retry-After header).\n\nApplied only if Name is not specified. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#idempotency",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "generation": {
+          "description": "A sequence number representing a specific generation of the desired state. Populated by the system. Read-only.",
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": "Map of string keys and values that can be used to organize and categorize (scope and select) objects. May match selectors of replication controllers and services. More info: http://kubernetes.io/docs/user-guide/labels",
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "managedFields": {
+          "description": "ManagedFields maps workflow-id and version to the set of fields that are managed by that workflow. This is mostly for internal housekeeping, and users typically shouldn't need to set or understand this field. A workflow can be the user's name, a controller's name, or the name of a specific apply path like \"ci-cd\". The set of fields is always in the version that the workflow used when modifying the object.",
+          "items": {
+            "description": "ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource that the fieldset applies to.",
+            "properties": {
+              "apiVersion": {
+                "description": "APIVersion defines the version of this resource that this field set applies to. The format is \"group/version\" just like the top-level APIVersion field. It is necessary to track the version of a field set because it cannot be automatically converted.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fieldsType": {
+                "description": "FieldsType is the discriminator for the different fields format and version. There is currently only one possible value: \"FieldsV1\"",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fieldsV1": {
+                "description": "FieldsV1 stores a set of fields in a data structure like a Trie, in JSON format.\n\nEach key is either a '.' representing the field itself, and will always map to an empty set, or a string representing a sub-field or item. The string will follow one of these four formats: 'f:<name>', where <name> is the name of a field in a struct, or key in a map 'v:<value>', where <value> is the exact json formatted value of a list item 'i:<index>', where <index> is position of a item in a list 'k:<keys>', where <keys> is a map of  a list item's key fields to their unique values If a key maps to an empty Fields value, the field that key represents is part of the set.\n\nThe exact format is defined in sigs.k8s.io/structured-merge-diff",
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "manager": {
+                "description": "Manager is an identifier of the workflow managing these fields.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "operation": {
+                "description": "Operation is the type of operation which lead to this ManagedFieldsEntry being created. The only valid values for this field are 'Apply' and 'Update'.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "time": {
+                "description": "Time is a wrapper around time.Time which supports correct marshaling to YAML and JSON.  Wrappers are provided for many of the factory methods that the time package offers.",
+                "format": "date-time",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "name": {
+          "description": "Name must be unique within a namespace. Is required when creating resources, although some resources may allow a client to request the generation of an appropriate name automatically. Name is primarily intended for creation idempotence and configuration definition. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/identifiers#names",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "namespace": {
+          "description": "Namespace defines the space within which each name must be unique. An empty namespace is equivalent to the \"default\" namespace, but \"default\" is the canonical representation. Not all objects are required to be scoped to a namespace - the value of this field for those objects will be empty.\n\nMust be a DNS_LABEL. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/namespaces",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ownerReferences": {
+          "description": "List of objects depended by this object. If ALL objects in the list have been deleted, this object will be garbage collected. If this object is managed by a controller, then an entry in this list will point to this controller, with the controller field set to true. There cannot be more than one managing controller.",
+          "items": {
+            "description": "OwnerReference contains enough information to let you identify an owning object. An owning object must be in the same namespace as the dependent, or be cluster-scoped, so there is no namespace field.",
+            "properties": {
+              "apiVersion": {
+                "description": "API version of the referent.",
+                "type": "string"
+              },
+              "blockOwnerDeletion": {
+                "description": "If true, AND if the owner has the \"foregroundDeletion\" finalizer, then the owner cannot be deleted from the key-value store until this reference is removed. Defaults to false. To set this field, a user needs \"delete\" permission of the owner, otherwise 422 (Unprocessable Entity) will be returned.",
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "controller": {
+                "description": "If true, this reference points to the managing controller.",
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "kind": {
+                "description": "Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names",
+                "type": "string"
+              },
+              "uid": {
+                "description": "UID of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#uids",
+                "type": "string"
+              }
+            },
+            "required": [
+              "apiVersion",
+              "kind",
+              "name",
+              "uid"
+            ],
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ],
+          "x-kubernetes-patch-merge-key": "uid",
+          "x-kubernetes-patch-strategy": "merge"
+        },
+        "resourceVersion": {
+          "description": "An opaque value that represents the internal version of this object that can be used by clients to determine when objects have changed. May be used for optimistic concurrency, change detection, and the watch operation on a resource or set of resources. Clients must treat these values as opaque and passed unmodified back to the server. They may only be valid for a particular resource or set of resources.\n\nPopulated by the system. Read-only. Value must be treated as opaque by clients and . More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "selfLink": {
+          "description": "SelfLink is a URL representing this object. Populated by the system. Read-only.\n\nDEPRECATED Kubernetes will stop propagating this field in 1.20 release and the field is planned to be removed in 1.21 release.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "uid": {
+          "description": "UID is the unique in time and space value for this object. It is typically generated by the server on successful creation of a resource and is not allowed to change on PUT operations.\n\nPopulated by the system. Read-only. More info: http://kubernetes.io/docs/user-guide/identifiers#uids",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "graph": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "$ref": "#/$defs/components"
+        },
+        "flows": {
+          "$ref": "#/$defs/flows"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "components",
+        "flows"
+      ]
+    },
+    "components": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z0-9][-a-z0-9]*[a-z0-9]$": {
+          "$ref": "#/$defs/component"
+        }
+      },
+      "additionalProperties": false
+    },
+    "component": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/batchExecutorComponent"
+        },
+        {
+          "$ref": "#/$defs/batchUploaderComponent"
+        },
+        {
+          "$ref": "#/$defs/tensorboardComponent"
+        },
+        {
+          "$ref": "#/$defs/genericServiceComponent"
+        },
+        {
+          "$ref": "#/$defs/jupyterLabComponent"
+        },
+        {
+          "$ref": "#/$defs/apisixComponent"
+        },
+        {
+          "$ref": "#/$defs/apisixDashboardComponent"
+        },
+        {
+          "$ref": "#/$defs/apisixIngressControllerComponent"
+        },
+        {
+          "$ref": "#/$defs/grafanaComponent"
+        },
+        {
+          "$ref": "#/$defs/pulsarComponent"
+        },
+        {
+          "$ref": "#/$defs/rampartDashboardComponent"
+        },
+        {
+          "$ref": "#/$defs/rampartUIComponent"
+        },
+        {
+          "$ref": "#/$defs/wolfRbacComponent"
+        },
+        {
+          "$ref": "#/$defs/wolfPostgresComponent"
+        },
+        {
+          "$ref": "#/$defs/rayJobComponent"
+        },
+        {
+          "$ref": "#/$defs/rayClusterComponent"
+        },
+        {
+          "$ref": "#/$defs/kuberayOperatorComponent"
+        }
+      ]
+    },
+    "apisixComponent": {
+      "properties": {
+        "type": {
+          "const": "apisix",
+          "default": "apisix"
+        },
+        "chart": {
+          "$ref": "#/$defs/apisixChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/apisixConfigAdvanced"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "true"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": true
+      }
+    },
+    "apisixDashboardComponent": {
+      "properties": {
+        "type": {
+          "const": "apisix-dashboard",
+          "default": "apisix-dashboard"
+        },
+        "chart": {
+          "$ref": "#/$defs/apisixDashboardChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/apisixDashboardConfigAdvanced"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "true"
+        },
+        "needs": {
+          "$ref": "#/$defs/apisixDashboardNeeds"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": true
+      }
+    },
+    "apisixIngressControllerComponent": {
+      "properties": {
+        "type": {
+          "const": "apisix-ingress-controller",
+          "default": "apisix-ingress-controller"
+        },
+        "chart": {
+          "$ref": "#/$defs/apisixIngressControllerChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/apisixIngressControllerConfigAdvanced"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "true"
+        },
+        "needs": {
+          "$ref": "#/$defs/apisixIngressControllerNeeds"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": true
+      }
+    },
+    "grafanaComponent": {
+      "properties": {
+        "type": {
+          "const": "grafana",
+          "default": "grafana"
+        },
+        "chart": {
+          "$ref": "#/$defs/grafanaChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/grafanaConfigAdvanced"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "true"
+        },
+        "needs": {
+          "$ref": "#/$defs/grafanaNeeds"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": true
+      }
+    },
+    "pulsarComponent": {
+      "properties": {
+        "type": {
+          "const": "system-pulsar",
+          "default": "system-pulsar"
+        },
+        "chart": {
+          "$ref": "#/$defs/pulsarChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/pulsarConfigAdvanced"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "true"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": true
+      }
+    },
+    "rampartDashboardComponent": {
+      "properties": {
+        "type": {
+          "const": "rampart-dashboard",
+          "default": "rampart-dashboard"
+        },
+        "chart": {
+          "$ref": "#/$defs/rampartDashboardChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/rampartDashboardConfigAdvanced"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "true"
+        },
+        "needs": {
+          "$ref": "#/$defs/rampartDashboardNeeds"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": true
+      }
+    },
+    "rampartUIComponent": {
+      "properties": {
+        "type": {
+          "const": "rampart-ui",
+          "default": "rampart-ui"
+        },
+        "chart": {
+          "$ref": "#/$defs/rampartUIChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/rampartUIConfigAdvanced"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "true"
+        },
+        "needs": {
+          "$ref": "#/$defs/rampartUINeeds"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": true
+      }
+    },
+    "symphonyInfraComponent": {
+      "properties": {
+        "type": {
+          "const": "symphony-infra",
+          "default": "symphony-infra"
+        },
+        "chart": {
+          "$ref": "#/$defs/symphonyInfraChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "global": {
+              "type": "object",
+              "properties": {
+                "namespace": {
+                  "type": "string",
+                  "default": "symphony-infra"
+                },
+                "master_ip": {
+                  "type": "string",
+                  "default": "10.1.97.137"
+                },
+                "auth_url": {
+                  "type": "string",
+                  "default": "component-sso.symphony-infra.svc.cluster.local:8088"
+                },
+                "registry": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "nginx-ingress": {
+              "type": "object",
+              "properties": {
+                "controller": {
+                  "type": "object",
+                  "properties": {
+                    "service": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "default": "NodePort",
+                          "enum": [
+                            "NodePort",
+                            "LoadBalancer"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": true
+      }
+    },
+    "wolfRbacComponent": {
+      "properties": {
+        "type": {
+          "const": "wolf-rbac",
+          "default": "wolf-rbac"
+        },
+        "chart": {
+          "$ref": "#/$defs/wolfRbacChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/wolfRbacConfigAdvanced"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "true"
+        },
+        "needs": {
+          "$ref": "#/$defs/wolfRbacNeeds"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": true
+      }
+    },
+    "wolfPostgresComponent": {
+      "properties": {
+        "type": {
+          "const": "wolf-postgres",
+          "default": "wolf-postgres"
+        },
+        "chart": {
+          "$ref": "#/$defs/wolfPostgresChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/wolfPostgresConfigAdvanced"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "true"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": true
+      }
+    },
+    "batchExecutorComponent": {
+      "properties": {
+        "type": {
+          "const": "batch-executor",
+          "default": "batch-executor"
+        },
+        "chart": {
+          "$ref": "#/$defs/batchExecutorChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/batchExecutorConfigAdvanced"
+        },
+        "$uiConfigBasic": {
+          "$ref": "#/$defs/batchExecutorConfigBasic"
+        },
+        "$uiConfigIntermediate": {
+          "$ref": "#/$defs/batchExecutorConfigIntermediate"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": true,
+        "system": false
+      }
+    },
+    "batchUploaderComponent": {
+      "properties": {
+        "type": {
+          "const": "batch-uploader",
+          "default": "batch-uploader"
+        },
+        "chart": {
+          "$ref": "#/$defs/batchUploaderChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/batchUploaderConfigAdvanced"
+        },
+        "$uiConfigBasic": {
+          "$ref": "#/$defs/batchUploaderConfigBasic"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": true,
+        "system": false
+      }
+    },
+    "tensorboardComponent": {
+      "properties": {
+        "type": {
+          "const": "tensorboard",
+          "default": "tensorboard"
+        },
+        "chart": {
+          "$ref": "#/$defs/tensorboardChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/tensorboardConfig"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": true,
+        "system": false
+      }
+    },
+    "genericServiceComponent": {
+      "properties": {
+        "type": {
+          "const": "generic-service",
+          "default": "generic-service"
+        },
+        "chart": {
+          "$ref": "#/$defs/genericServiceChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/genericServiceConfigAdvanced"
+        },
+        "$uiConfigBasic": {
+          "$ref": "#/$defs/genericServiceConfigBasic"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": true,
+        "system": false
+      }
+    },
+    "alpaOptServiceComponent": {
+      "properties": {
+        "type": {
+          "const": "alpa-opt-service",
+          "default": "alpa-opt-service"
+        },
+        "chart": {
+          "$ref": "#/$defs/alpaOptServiceChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/alpaOptServiceConfigAdvanced"
+        },
+        "$uiConfigBasic": {
+          "$ref": "#/$defs/alpaOptServiceConfigBasic"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": false
+      }
+    },
+    "experimentManagerComponent": {
+      "properties": {
+        "type": {
+          "const": "experiment-manager",
+          "default": "experiment-manager"
+        },
+        "chart": {
+          "$ref": "#/$defs/experimentManagerChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "nnistatefulset": {
+              "type": "object",
+              "properties": {
+                "image": {
+                  "$ref": "#/$defs/image"
+                },
+                "petexi": {
+                  "type": "object",
+                  "properties": {
+                    "cluster_url": {
+                      "type": "string"
+                    },
+                    "symphony_namespace": {
+                      "type": "string",
+                      "default": "{{ requiredEnv \"RAMPART_symphony_1_namespace\" }}"
+                    },
+                    "custom_secrets": {
+                      "type": "object",
+                      "properties": {
+                        "enabled": {
+                          "type": "boolean",
+                          "default": false
+                        },
+                        "from": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "cluster_url"
+                  ]
+                }
+              }
+            },
+            "experiment-manager-server": {
+              "type": "object",
+              "properties": {
+                "image": {
+                  "$ref": "#/$defs/image"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "$uiConfigBasic": {
+          "type": "object",
+          "properties": {
+            "nnistatefulset": {
+              "type": "object",
+              "properties": {
+                "petexi": {
+                  "type": "object",
+                  "properties": {
+                    "cluster_url": {
+                      "type": "string"
+                    },
+                    "symphony_namespace": {
+                      "type": "string",
+                      "default": "{{ requiredEnv \"RAMPART_symphony_1_namespace\" }}"
+                    }
+                  },
+                  "required": [
+                    "cluster_url"
+                  ]
+                },
+                "pvc": {
+                  "type": "object",
+                  "properties": {
+                    "symphony": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "default": "{{ requiredEnv \"RAMPART_symphony_1_namespace\" }}-dfs"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": true,
+        "system": false
+      }
+    },
+    "jupyterLabComponent": {
+      "properties": {
+        "type": {
+          "const": "jupyterlab",
+          "default": "jupyterlab"
+        },
+        "chart": {
+          "$ref": "#/$defs/jupyterLabChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/jupyterLabConfigAdvanced"
+        },
+        "$uiConfigBasic": {
+          "$ref": "#/$defs/jupyterLabConfigBasic"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": true,
+        "system": false
+      }
+    },
+    "symphonyComponent": {
+      "properties": {
+        "type": {
+          "const": "symphony",
+          "default": "symphony"
+        },
+        "chart": {
+          "$ref": "#/$defs/symphonyChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "global": {
+              "type": "object",
+              "properties": {
+                "master_ip": {
+                  "type": "string",
+                  "default": "10.1.97.137"
+                },
+                "auth_url": {
+                  "type": "string",
+                  "default": "component-sso.symphony-infra.svc.cluster.local:8088"
+                },
+                "PULSAR_ADDR": {
+                  "type": "string",
+                  "default": "pulsar-broker.petuum-system-infra-pulsar.svc.cluster.local:6650"
+                },
+                "sso_start": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "infra_namespace": {
+                  "type": "string",
+                  "default": "symphony-infra"
+                },
+                "common": {
+                  "type": "object",
+                  "properties": {
+                    "repository": {
+                      "type": "string"
+                    },
+                    "pullSecrets": {
+                      "type": "string",
+                      "default": "stagingsecret"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": true,
+        "system": false
+      }
+    },
+    "optServiceComponent": {
+      "properties": {
+        "type": {
+          "const": "opt-service",
+          "default": "opt-service"
+        },
+        "chart": {
+          "$ref": "#/$defs/optServiceChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/optServiceConfigAdvanced"
+        },
+        "$uiConfigBasic": {
+          "$ref": "#/$defs/optServiceConfigBasic"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": false
+      }
+    },
+    "rayJobComponent": {
+      "properties": {
+        "type": {
+          "const": "ray-job",
+          "default": "ray-job"
+        },
+        "chart": {
+          "$ref": "#/$defs/rayJobChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/rayJobConfigAdvanced"
+        },
+        "$uiConfigBasic": {
+          "$ref": "#/$defs/rayJobConfigBasic"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "false"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": true,
+        "system": false
+      }
+    },
+    "rayClusterComponent": {
+      "properties": {
+        "type": {
+          "const": "ray-cluster",
+          "default": "ray-cluster"
+        },
+        "chart": {
+          "$ref": "#/$defs/rayClusterChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "$ref": "#/$defs/rayClusterConfigAdvanced"
+        },
+        "$uiConfigBasic": {
+          "$ref": "#/$defs/rayClusterConfigBasic"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "false"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": true,
+        "system": false
+      }
+    },
+    "kuberayOperatorComponent": {
+      "properties": {
+        "type": {
+          "const": "kuberay-operator",
+          "default": "kuberay-operator"
+        },
+        "chart": {
+          "$ref": "#/$defs/kuberayOperatorChart"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "outputs": {
+          "$ref": "#/$defs/ios"
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta",
+          "hideInLibrary": "true"
+        }
+      },
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chart",
+        "config",
+        "inputs",
+        "outputs"
+      ],
+      "$ui": {
+        "core": false,
+        "system": true
+      }
+    },
+    "ios": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z0-9][-a-z0-9]*[a-z0-9]$": {
+          "$ref": "#/$defs/io"
+        }
+      }
+    },
+    "io": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/volumeIo"
+        },
+        {
+          "$ref": "#/$defs/pulsarIo"
+        },
+        {
+          "$ref": "#/$defs/repoIo"
+        }
+      ]
+    },
+    "volumeIo": {
+      "type": "object",
+      "properties": {
+        "flow": {
+          "type": "string"
+        },
+        "type": {
+          "const": "volume",
+          "default": "volume"
+        },
+        "config": {
+          "$ref": "#/$defs/volumeIoConfig"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "flow",
+        "type"
+      ],
+      "$ui": {
+        "name": "File Volume",
+        "flow": "volume",
+        "color": "#c4c4c4"
+      }
+    },
+    "volumeIoConfig": {
+      "type": "object",
+      "properties": {
+        "mountPath": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pulsarIo": {
+      "type": "object",
+      "properties": {
+        "flow": {
+          "type": "string"
+        },
+        "type": {
+          "const": "pulsar",
+          "default": "pulsar"
+        },
+        "config": {
+          "$ref": "#/$defs/pulsarIoConfig"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "flow",
+        "type"
+      ],
+      "$ui": {
+        "name": "Pulsar Topic",
+        "flow": "pulsar",
+        "color": "#866f3c"
+      }
+    },
+    "pulsarIoConfig": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "repoIo": {
+      "type": "object",
+      "properties": {
+        "flow": {
+          "type": "string"
+        },
+        "type": {
+          "const": "repository",
+          "default": "repository"
+        },
+        "config": {
+          "$ref": "#/$defs/repoIoConfig"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "flow",
+        "type"
+      ],
+      "$ui": {
+        "name": "Repository",
+        "flow": "repository",
+        "color": "#556A54"
+      }
+    },
+    "repoIoConfig": {
+      "type": "object",
+      "properties": {
+        "mountPath": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "apisixChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "apisix"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.4.0-2.10.0-2022032801"
+        }
+      }
+    },
+    "apisixDashboardChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "apisix-dashboard"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.5-2.10.1-20220508a"
+        }
+      }
+    },
+    "apisixIngressControllerChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "apisix-ingress-controller"
+        },
+        "repo": {
+          "type": "string",
+          "default": "https://charts.apiseven.com"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.9.0"
+        }
+      }
+    },
+    "grafanaChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "rampart-grafana"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.0"
+        }
+      }
+    },
+    "pulsarChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "pulsar"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "2.6.4-mop-061803-ram004"
+        }
+      }
+    },
+    "rampartDashboardChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "rampart-dashboard"
+        },
+        "repo": {
+          "type": "string",
+          "default": "rampart-helm3-repo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.0.1"
+        }
+      }
+    },
+    "rampartUIChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "rampart-ui"
+        },
+        "repo": {
+          "type": "string",
+          "default": "rampart-helm3-repo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.0.15"
+        }
+      }
+    },
+    "symphonyInfraChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "symphony-infra"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.7.1"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repo",
+        "version"
+      ]
+    },
+    "wolfRbacChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "wolf-rbac"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.0-0.5.2-20220508a"
+        }
+      }
+    },
+    "wolfPostgresChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "postgres-wolf"
+        },
+        "repo": {
+          "type": "string",
+          "default": "rampart-helm3-repo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.0-11.15-032801"
+        }
+      }
+    },
+    "batchExecutorChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "batch-executor"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.6.1"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repo",
+        "version"
+      ]
+    },
+    "batchUploaderChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "batch-uploader"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.4.0"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repo",
+        "version"
+      ]
+    },
+    "tensorboardChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "tensorboard"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.3.0"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repo",
+        "version"
+      ]
+    },
+    "genericServiceChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "generic-service"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.4.1"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repo",
+        "version"
+      ]
+    },
+    "alpaOptServiceChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "alpa-opt-service"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.2.0"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repo",
+        "version"
+      ]
+    },
+    "experimentManagerChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "experiment-manager"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "1.2.3"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repo",
+        "version"
+      ]
+    },
+    "jupyterLabChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "jupyterlab-component"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.4"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repo",
+        "version"
+      ]
+    },
+    "symphonyChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "symphony"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.7.3"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repo",
+        "version"
+      ]
+    },
+    "optServiceChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "opt-service"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.2.0"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "repo",
+        "version"
+      ]
+    },
+    "rayJobChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "ray-job"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.1"
+        }
+      }
+    },
+    "rayClusterChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "ray-cluster"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.0"
+        }
+      }
+    },
+    "kuberayOperatorChart": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "kuberay-operator"
+        },
+        "repo": {
+          "$ref": "#/$defs/chartRepo"
+        },
+        "version": {
+          "type": "string",
+          "default": "0.1.0"
+        }
+      }
+    },
+    "chartRepo": {
+      "type": "string",
+      "format": "string",
+      "default": "rampart-repo"
+    },
+    "flows": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z0-9][-a-z0-9]*[a-z0-9]$": {
+          "$ref": "#/$defs/flow"
+        }
+      },
+      "additionalProperties": false
+    },
+    "flow": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/volumeFlow"
+        },
+        {
+          "$ref": "#/$defs/pulsarFlow"
+        },
+        {
+          "$ref": "#/$defs/repoFlow"
+        }
+      ]
+    },
+    "volumeFlow": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/$defs/volumeFlowConfig"
+        },
+        "type": {
+          "const": "volume",
+          "default": "volume"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "config",
+        "type"
+      ],
+      "$ui": {
+        "name": "File Volume",
+        "type": "volume",
+        "icon": {
+          "cssClass": "bi bi-folder-fill"
+        },
+        "backgroundColor": "#7b8185",
+        "textColor": "#c4c4c4",
+        "core": true,
+        "system": false
+      }
+    },
+    "pulsarFlow": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/$defs/pulsarFlowConfig"
+        },
+        "type": {
+          "const": "pulsar",
+          "default": "pulsar"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "config",
+        "type"
+      ],
+      "$ui": {
+        "name": "Pulsar Topic",
+        "type": "pulsar",
+        "icon": {
+          "file": "/images/apache-pulsar-32.svg"
+        },
+        "backgroundColor": "#866f3c",
+        "textColor": "#c4c4c4",
+        "core": true,
+        "system": false
+      }
+    },
+    "volumeFlowConfig": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "string",
+          "default": "1Gi"
+        },
+        "reclaimPolicy": {
+          "enum": [
+            "Retain",
+            "Delete"
+          ],
+          "default": "Delete"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "size"
+      ]
+    },
+    "pulsarFlowConfig": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "repoFlow": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/$defs/repoFlowConfig"
+        },
+        "type": {
+          "const": "repository",
+          "default": "repository"
+        },
+        "$ui": {
+          "$ref": "#/$defs/uiMeta"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "config",
+        "type"
+      ],
+      "$ui": {
+        "name": "Repository",
+        "type": "repository",
+        "icon": {
+          "file": "/images/repository-29.svg"
+        },
+        "backgroundColor": "#556A54",
+        "textColor": "#c4c4c4",
+        "core": true,
+        "system": false
+      }
+    },
+    "repoFlowConfig": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "string",
+          "default": "1Gi"
+        },
+        "reclaimPolicy": {
+          "enum": [
+            "Retain",
+            "Delete"
+          ],
+          "default": "Delete"
+        },
+        "kind": {
+          "enum": [
+            "dvc",
+            "git"
+          ]
+        },
+        "remote": {
+          "type": "string"
+        },
+        "secret": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "useremail": {
+          "type": "string"
+        },
+        "defaultBranch": {
+          "type": "string"
+        },
+        "storageRemote": {
+          "type": "string"
+        },
+        "storageRemoteName": {
+          "type": "string"
+        },
+        "storageSecret": {
+          "type": "string"
+        },
+        "storageSecretType": {
+          "const": "s3"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "size",
+        "kind"
+      ]
+    },
+    "uiMeta": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "pullPolicy": {
+          "enum": [
+            "Always",
+            "IfNotPresent"
+          ],
+          "default": "IfNotPresent"
+        }
+      },
+      "additionalProperties": false
+    },
+    "persistence": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "existingClaim": {
+          "type": "string"
+        },
+        "storageClass": {
+          "type": "string"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "accessMode": {
+          "enum": [
+            "ReadWriteOnce",
+            "ReadWriteMany"
+          ]
+        },
+        "size": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rbac": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "resources": {
+      "description": "ResourceRequirements describes the compute resource requirements.",
+      "properties": {
+        "limits": {
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            ]
+          },
+          "description": "Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/",
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "requests": {
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            ]
+          },
+          "description": "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/",
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "ClusterIP",
+            "NodePort"
+          ]
+        },
+        "port": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "pathPrefix": {
+          "type": "string"
+        },
+        "AUSpec": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "hosts2": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/host2"
+      }
+    },
+    "host2": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "format": "hostname"
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "pathType": {
+                "enum": [
+                  "Prefix",
+                  "Exact"
+                ]
+              },
+              "portName": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "imagePullSecrets": {
+      "type": "array",
+      "items": {
+        "default": {
+          "name": "stagingsecret"
+        },
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "containerPorts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "containerPort": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string",
+            "default": "TCP"
+          }
+        },
+        "required": [
+          "containerPort"
+        ]
+      }
+    },
+    "containerEnv": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true,
+        "required": [
+          "name"
+        ]
+      }
+    },
+    "envFrom": {
+      "description": "List of sources to populate environment variables in the container. The keys defined within a source must be a C_IDENTIFIER. All invalid keys will be reported as an event when the container is starting. When a key exists in multiple sources, the value associated with the last source will take precedence. Values defined by an Env with a duplicate key will take precedence. Cannot be updated.",
+      "items": {
+        "description": "EnvFromSource represents the source of a set of ConfigMaps",
+        "properties": {
+          "configMapRef": {
+            "description": "ConfigMapEnvSource selects a ConfigMap to populate the environment variables with.\n\nThe contents of the target ConfigMap's Data field will represent the key-value pairs as environment variables.",
+            "properties": {
+              "name": {
+                "description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "optional": {
+                "description": "Specify whether the ConfigMap must be defined",
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "prefix": {
+            "description": "An optional identifier to prepend to each key in the ConfigMap. Must be a C_IDENTIFIER.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "secretRef": {
+            "description": "SecretEnvSource selects a Secret to populate the environment variables with.\n\nThe contents of the target Secret's Data field will represent the key-value pairs as environment variables.",
+            "properties": {
+              "name": {
+                "description": "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "optional": {
+                "description": "Specify whether the Secret must be defined",
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "batchExecutorConfigBasic": {
+      "type": "object",
+      "properties": {
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "jobConfig": {
+          "type": "object",
+          "properties": {
+            "imagePullSecrets": {
+              "$ref": "#/$defs/imagePullSecrets"
+            },
+            "image": {
+              "$ref": "#/$defs/image"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "image"
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "jobConfig"
+      ]
+    },
+    "batchExecutorConfigIntermediate": {
+      "type": "object",
+      "properties": {
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "image": {
+          "$ref": "#/$defs/image"
+        },
+        "jobConfig": {
+          "type": "object",
+          "properties": {
+            "imagePullSecrets": {
+              "$ref": "#/$defs/imagePullSecrets"
+            },
+            "image": {
+              "$ref": "#/$defs/image"
+            },
+            "inputMap": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "outputMap": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "command": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "env": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "resources": {
+              "$ref": "#/$defs/resources"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "image"
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "jobConfig"
+      ]
+    },
+    "batchExecutorConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "replicaCount": {
+          "type": "integer"
+        },
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "image": {
+          "$ref": "#/$defs/image"
+        },
+        "nameOverride": {
+          "type": "string"
+        },
+        "fullnameOverride": {
+          "type": "string"
+        },
+        "persistence": {
+          "$ref": "#/$defs/persistence"
+        },
+        "rbac": {
+          "$ref": "#/$defs/rbac"
+        },
+        "serviceAccount": {
+          "$ref": "#/$defs/serviceAccount"
+        },
+        "jobConfig": {
+          "type": "object",
+          "properties": {
+            "imagePullSecrets": {
+              "$ref": "#/$defs/imagePullSecrets"
+            },
+            "image": {
+              "$ref": "#/$defs/image"
+            },
+            "inputMap": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "outputMap": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "command": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "env": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "resources": {
+              "$ref": "#/$defs/resources"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "image"
+          ]
+        },
+        "batchExecutor": {
+          "type": "object",
+          "properties": {
+            "jobPollingInterval": {
+              "type": "integer"
+            },
+            "unwatchedInputs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "unwatchedOutputs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "podAnnotations": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "podSecurityContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "securityContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "nodeSelector": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "tolerations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "affinity": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "jobConfig"
+      ]
+    },
+    "batchUploaderConfigBasic": {
+      "type": "object",
+      "properties": {
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        }
+      },
+      "additionalProperties": true
+    },
+    "batchUploaderConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "replicaCount": {
+          "type": "integer"
+        },
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "image": {
+          "$ref": "#/$defs/image"
+        },
+        "nameOverride": {
+          "type": "string"
+        },
+        "fullnameOverride": {
+          "type": "string"
+        },
+        "persistence": {
+          "$ref": "#/$defs/persistence"
+        },
+        "rbac": {
+          "$ref": "#/$defs/rbac"
+        },
+        "serviceAccount": {
+          "$ref": "#/$defs/serviceAccount"
+        },
+        "service": {
+          "$ref": "#/$defs/service"
+        },
+        "ingress": {
+          "$ref": "#/$defs/ingress"
+        },
+        "podAnnotations": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "podSecurityContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "securityContext": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "nodeSelector": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "tolerations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "affinity": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "tensorboardConfig": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "$ref": "#/$defs/image"
+        },
+        "app": {
+          "type": "object",
+          "properties": {
+            "containerPort": {
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "defaultPath": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "genericServiceConfigBasic": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string",
+              "default": "latest"
+            },
+            "ports": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "default": "http"
+                  },
+                  "port": {
+                    "type": "integer"
+                  },
+                  "ingressPath": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "default": "/"
+                  },
+                  "ingressHost": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "websocket": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "command": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "env": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "repository",
+            "tag",
+            "ports"
+          ]
+        },
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "genericServiceConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string",
+              "default": "latest"
+            },
+            "pullPolicy": {
+              "enum": [
+                "Always",
+                "IfNotPresent"
+              ],
+              "default": "IfNotPresent"
+            },
+            "ports": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "default": "http"
+                  },
+                  "port": {
+                    "type": "integer"
+                  },
+                  "ingressPath": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "default": "/"
+                  },
+                  "ingressHost": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "websocket": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "command": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "env": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "repository",
+            "tag",
+            "ports"
+          ]
+        },
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "pathPrefix": {
+              "type": "string"
+            },
+            "AUSpec": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "resources": {
+          "$ref": "#/$defs/resources"
+        },
+        "shm": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "sizeLimit": {
+              "type": "string",
+              "default": "16Gi"
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "jupyterLabConfigBasic": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "default": "jupyter/datascience-notebook"
+            },
+            "tag": {
+              "type": "string",
+              "default": "2022-11-15"
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "limits": {
+              "type": "object",
+              "properties": {
+                "memory": {
+                  "type": "string",
+                  "default": "2Gi"
+                },
+                "cpu": {
+                  "type": "string",
+                  "default": "1"
+                }
+              },
+              "additionalProperties": true
+            },
+            "requests": {
+              "type": "object",
+              "properties": {
+                "memory": {
+                  "type": "string",
+                  "default": "2Gi"
+                },
+                "cpu": {
+                  "type": "string",
+                  "default": "1"
+                }
+              },
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    },
+    "jupyterLabConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "default": "jupyter/datascience-notebook"
+            },
+            "tag": {
+              "type": "string",
+              "default": "2022-11-15"
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "requests": {
+              "type": "object",
+              "properties": {
+                "memory": {
+                  "type": "string",
+                  "default": "2Gi"
+                },
+                "cpu": {
+                  "type": "string",
+                  "default": "1"
+                }
+              },
+              "additionalProperties": true
+            },
+            "limits": {
+              "type": "object",
+              "properties": {
+                "memory": {
+                  "type": "string",
+                  "default": "4Gi"
+                },
+                "cpu": {
+                  "type": "string",
+                  "default": "2"
+                }
+              },
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    },
+    "alpaOptServiceConfigBasic": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "default": "registry.petuum.com/dev/alpa-opt-service"
+            },
+            "tag": {
+              "type": "string",
+              "default": "latest"
+            },
+            "ports": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "default": "http"
+                  },
+                  "port": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "command": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "env": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "repository",
+            "tag",
+            "ports"
+          ]
+        },
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "hosts": {
+              "$ref": "#/$defs/hosts2"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "alpaOptServiceConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string",
+              "default": "latest"
+            },
+            "pullPolicy": {
+              "enum": [
+                "Always",
+                "IfNotPresent"
+              ],
+              "default": "IfNotPresent"
+            },
+            "ports": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "default": "http"
+                  },
+                  "port": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "command": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "env": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "repository",
+            "tag",
+            "ports"
+          ]
+        },
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "pathPrefix": {
+              "type": "string"
+            },
+            "hosts": {
+              "$ref": "#/$defs/hosts2"
+            },
+            "tls": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "secretName": {
+                    "type": "string"
+                  },
+                  "hosts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "hostname"
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "optServiceConfigBasic": {
+      "type": "object",
+      "properties": {
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "pathPrefix": {
+              "type": "string"
+            },
+            "hosts": {
+              "$ref": "#/$defs/hosts2"
+            },
+            "tls": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "secretName": {
+                    "type": "string"
+                  },
+                  "hosts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "hostname"
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "optServiceConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "head": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string",
+                  "default": "latest"
+                },
+                "pullPolicy": {
+                  "enum": [
+                    "Always",
+                    "IfNotPresent",
+                    null
+                  ],
+                  "default": "IfNotPresent"
+                },
+                "ports": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "default": "http"
+                      },
+                      "port": {
+                        "type": "integer"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "command": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "args": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "env": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "repository",
+                "tag",
+                "ports"
+              ]
+            },
+            "rayStartParams": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "servicePort": {
+              "type": "number"
+            }
+          }
+        },
+        "worker": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string",
+                  "default": "latest"
+                },
+                "pullPolicy": {
+                  "enum": [
+                    "Always",
+                    "IfNotPresent"
+                  ],
+                  "default": "IfNotPresent"
+                },
+                "ports": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "default": "http"
+                      },
+                      "port": {
+                        "type": "integer"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "command": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "args": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "env": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "repository",
+                "tag"
+              ]
+            },
+            "maxReplicaCount": {
+              "type": "number"
+            },
+            "minReplicaCount": {
+              "type": "number"
+            },
+            "rayStartParams": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "modelName": {
+          "type": "string"
+        },
+        "ray": {
+          "type": "object",
+          "properties": {
+            "rayVersion": {
+              "type": "string"
+            }
+          }
+        },
+        "runtimeEnv": {
+          "type": "string"
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "limits": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "requests": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "rayService": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "port": {
+          "type": "integer"
+        },
+        "targetPort": {
+          "anyOf": [
+            {
+              "title": "target port string",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "title": "target port integer",
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "rayIngress": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "path": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        }
+      }
+    },
+    "rayJobConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "$ref": "#/$defs/image"
+        },
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "nameOverride": {
+          "type": "string"
+        },
+        "fullnameOverride": {
+          "type": "string"
+        },
+        "entrypoint": {
+          "type": "string"
+        },
+        "runtimeEnv": {
+          "type": "string"
+        },
+        "jobId": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "shutdownAfterJobFinishes": {
+          "type": "boolean",
+          "default": false
+        },
+        "ttlSecondsAfterFinished": {
+          "type": "integer",
+          "default": 300
+        },
+        "clusterSelector": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "service": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "ClusterIP",
+                "NodePort"
+              ]
+            },
+            "rayDashboard": {
+              "$ref": "#/$defs/rayService"
+            },
+            "extraEndpoints": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/rayService"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "pathPrefix": {
+              "type": "string"
+            },
+            "AUSpec": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "rayDashboard": {
+              "$ref": "#/$defs/rayIngress"
+            },
+            "extraEndpoints": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/rayIngress"
+              }
+            }
+          }
+        },
+        "head": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "rayVersion": {
+              "type": "string",
+              "default": "2.0.0"
+            },
+            "enableInTreeAutoscaling": {
+              "type": "boolean"
+            },
+            "ports": {
+              "$ref": "#/$defs/containerPorts"
+            },
+            "extraPorts": {
+              "$ref": "#/$defs/containerPorts"
+            },
+            "groupName": {
+              "type": "string"
+            },
+            "replicas": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            },
+            "initArgs": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "containerEnv": {
+              "$ref": "#/$defs/containerEnv"
+            },
+            "envFrom": {
+              "$ref": "#/$defs/envFrom"
+            },
+            "resources": {
+              "$ref": "#/$defs/resources"
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "nodeSelector": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "tolerations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "affinity": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "worker": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "disabled": {
+              "type": "boolean"
+            },
+            "ports": {
+              "$ref": "#/$defs/containerPorts"
+            },
+            "groupName": {
+              "type": "string"
+            },
+            "replicas": {
+              "type": "integer"
+            },
+            "maxiReplicas": {
+              "type": "integer"
+            },
+            "miniReplicas": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            },
+            "initArgs": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "containerEnv": {
+              "$ref": "#/$defs/containerEnv"
+            },
+            "envFrom": {
+              "$ref": "#/$defs/envFrom"
+            },
+            "resources": {
+              "$ref": "#/$defs/resources"
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "nodeSelector": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "tolerations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "affinity": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalWorkerGroups": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "disabled": {
+                "type": "boolean"
+              },
+              "ports": {
+                "$ref": "#/$defs/containerPorts"
+              },
+              "replicas": {
+                "type": "integer"
+              },
+              "maxiReplicas": {
+                "type": "integer"
+              },
+              "miniReplicas": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string"
+              },
+              "initArgs": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "containerEnv": {
+                "$ref": "#/$defs/containerEnv"
+              },
+              "envFrom": {
+                "$ref": "#/$defs/envFrom"
+              },
+              "resources": {
+                "$ref": "#/$defs/resources"
+              },
+              "annotations": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "nodeSelector": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "tolerations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "affinity": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "headServiceSuffix": {
+          "type": "string"
+        },
+        "rampart": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "rayJobConfigBasic": {
+      "type": "object",
+      "properties":{
+        "image": {
+          "$ref": "#/$defs/image"
+        },
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "entrypoint": {
+          "type": "string"
+        },
+        "runtimeEnv": {
+          "type": "string"
+        },
+        "head": {
+          "type": "object",
+          "properties": {
+            "rayVersion": {
+              "type": "string",
+              "default": "2.0.0"
+            },
+            "initArgs": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "containerEnv": {
+              "$ref": "#/$defs/containerEnv"
+            },
+            "resources": {
+              "$ref": "#/$defs/resources"
+            }
+          }
+        },
+        "worker": {
+          "type": "object",
+          "properties": {
+            "disabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer"
+            },
+            "initArgs": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "containerEnv": {
+              "$ref": "#/$defs/containerEnv"
+            },
+            "resources": {
+              "$ref": "#/$defs/resources"
+            }
+          }
+        }
+      }
+    },
+    "rayClusterConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "$ref": "#/$defs/image"
+        },
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "nameOverride": {
+          "type": "string"
+        },
+        "fullnameOverride": {
+          "type": "string"
+        },
+        "service": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "enum": [
+                "ClusterIP",
+                "NodePort"
+              ]
+            },
+            "dashboard": {
+              "$ref": "#/$defs/rayService"
+            },
+            "gcs": {
+              "$ref": "#/$defs/rayService"
+            },
+            "client": {
+              "$ref": "#/$defs/rayService"
+            },
+            "serve": {
+              "$ref": "#/$defs/rayService"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/rayService"
+          }
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "pathPrefix": {
+              "type": "string"
+            },
+            "AUSpec": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "dashboard": {
+              "$ref": "#/$defs/rayIngress"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/rayIngress"
+          }
+        },
+        "head": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "rayVersion": {
+              "type": "string",
+              "default": "2.0.0"
+            },
+            "enableInTreeAutoscaling": {
+              "type": "boolean"
+            },
+            "ports": {
+              "$ref": "#/$defs/containerPorts"
+            },
+            "groupName": {
+              "type": "string"
+            },
+            "replicas": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            },
+            "initArgs": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "containerEnv": {
+              "$ref": "#/$defs/containerEnv"
+            },
+            "envFrom": {
+              "$ref": "#/$defs/envFrom"
+            },
+            "resources": {
+              "$ref": "#/$defs/resources"
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "nodeSelector": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "tolerations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "affinity": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "worker": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "disabled": {
+              "type": "boolean"
+            },
+            "ports": {
+              "$ref": "#/$defs/containerPorts"
+            },
+            "groupName": {
+              "type": "string"
+            },
+            "replicas": {
+              "type": "integer"
+            },
+            "maxiReplicas": {
+              "type": "integer"
+            },
+            "miniReplicas": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            },
+            "initArgs": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "containerEnv": {
+              "$ref": "#/$defs/containerEnv"
+            },
+            "envFrom": {
+              "$ref": "#/$defs/envFrom"
+            },
+            "resources": {
+              "$ref": "#/$defs/resources"
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "nodeSelector": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "tolerations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "affinity": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalWorkerGroups": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "disabled": {
+                "type": "boolean"
+              },
+              "ports": {
+                "$ref": "#/$defs/containerPorts"
+              },
+              "replicas": {
+                "type": "integer"
+              },
+              "maxiReplicas": {
+                "type": "integer"
+              },
+              "miniReplicas": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string"
+              },
+              "initArgs": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "containerEnv": {
+                "$ref": "#/$defs/containerEnv"
+              },
+              "envFrom": {
+                "$ref": "#/$defs/envFrom"
+              },
+              "resources": {
+                "$ref": "#/$defs/resources"
+              },
+              "annotations": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "nodeSelector": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "tolerations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "affinity": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "headServiceSuffix": {
+          "type": "string"
+        },
+        "rampart": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "rayClusterConfigBasic": {
+      "type": "object",
+      "properties":{
+        "image": {
+          "$ref": "#/$defs/image"
+        },
+        "imagePullSecrets": {
+          "$ref": "#/$defs/imagePullSecrets"
+        },
+        "head": {
+          "type": "object",
+          "properties": {
+            "rayVersion": {
+              "type": "string",
+              "default": "2.0.0"
+            },
+            "initArgs": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "containerEnv": {
+              "$ref": "#/$defs/containerEnv"
+            },
+            "resources": {
+              "$ref": "#/$defs/resources"
+            }
+          }
+        },
+        "worker": {
+          "type": "object",
+          "properties": {
+            "disabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer"
+            },
+            "initArgs": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "containerEnv": {
+              "$ref": "#/$defs/containerEnv"
+            },
+            "resources": {
+              "$ref": "#/$defs/resources"
+            }
+          }
+        }
+      }
+    },
+    "apisixConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "admin": {
+          "type": "object",
+          "properties": {
+            "allow": {
+              "type": "object",
+              "properties": {
+                "ipList": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "etcd": {
+          "type": "object",
+          "properties": {
+            "replicaCount": {
+              "type": "integer"
+            }
+          }
+        },
+        "gateway": {
+          "type": "object",
+          "properties": {
+            "annotations": {
+              "type": "null"
+            },
+            "externalTrafficPolicy": {
+              "type": "string"
+            },
+            "tls": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "nodePort": {
+                  "type": "integer"
+                }
+              }
+            },
+            "type": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "apisixDashboardConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "gateway": {
+          "type": "object",
+          "properties": {
+            "namespace": {
+              "type": "string"
+            },
+            "releaseName": {
+              "type": "string"
+            }
+          }
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "exprs": {
+              "type": "object",
+              "properties": {
+                "subject": {
+                  "type": "object",
+                  "properties": {
+                    "opValue": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "apisixIngressControllerConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "properties": {
+            "apisix": {
+              "type": "object",
+              "properties": {
+                "baseURL": {
+                  "type": "string"
+                },
+                "serviceName": {
+                  "type": "string"
+                },
+                "serviceNamespace": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "grafanaConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "apisixRoute": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          }
+        },
+        "grafana": {
+          "type": "object",
+          "properties": {
+            "adminPassword": {
+              "type": "string"
+            },
+            "datasources": {
+              "type": "object",
+              "properties": {
+                "datasources.yaml": {}
+              }
+            },
+            "grafana.ini": {
+              "type": "object",
+              "properties": {
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "root_url": {
+                      "type": "string"
+                    },
+                    "serve_from_sub_path": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "promtail": {
+          "type": "object",
+          "properties": {
+            "config": {
+              "type": "object",
+              "properties": {
+                "clients": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "extraArgs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "loki": {
+              "type": "object",
+              "properties": {
+                "servicename": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "pulsarConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "bookkeeper": {
+          "type": "object",
+          "properties": {
+            "configData": {
+              "type": "object",
+              "properties": {
+                "PULSAR_MEM": {
+                  "type": "string"
+                }
+              }
+            },
+            "journal_size": {
+              "type": "string"
+            },
+            "ledgers_size": {
+              "type": "string"
+            }
+          }
+        },
+        "broker": {
+          "type": "object",
+          "properties": {
+            "configData": {
+              "type": "object",
+              "properties": {
+                "PULSAR_MEM": {
+                  "type": "string"
+                }
+              }
+            },
+            "defaultNamespace": {
+              "type": "object",
+              "properties": {
+                "backlogQuota": {
+                  "type": "string"
+                },
+                "msgTTL": {
+                  "type": "string"
+                },
+                "retentionSize": {
+                  "type": "string"
+                }
+              }
+            },
+            "ingress": {
+              "type": "object",
+              "properties": {
+                "annotations": {
+                  "type": "object",
+                  "properties": {
+                    "kubernetes.io/ingress.class": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "limits": {
+                  "type": "object",
+                  "properties": {
+                    "memory": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "memory": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "cluster": {
+          "type": "object",
+          "properties": {
+            "broker": {
+              "type": "string"
+            }
+          }
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string"
+            }
+          }
+        },
+        "mode": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "persistence": {
+          "type": "object",
+          "properties": {
+            "storageClassDefault": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "rampartDashboardConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "urlPrefix": {
+          "type": "string"
+        },
+        "apisix": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "masterIP": {
+              "type": "string"
+            },
+            "masterPort": {
+              "type": "number"
+            },
+            "appId": {
+              "type": "string"
+            },
+            "plugins": {
+              "type": "object",
+              "properties": {
+                "auth": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "proxy": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "rampartUIConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "backend": {
+          "type": "string"
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "pullSecrets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "registry": {
+              "type": "string"
+            }
+          }
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "defaultPath": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "exprs": {
+              "type": "object",
+              "properties": {
+                "subject": {
+                  "type": "object",
+                  "properties": {
+                    "opValue": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "wolfPostgresConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "global": {
+          "type": "object",
+          "properties": {
+            "imagePullSecrets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "postgres": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "wolfRbacConfigAdvanced": {
+      "type": "object",
+      "properties": {
+        "global": {
+          "type": "object",
+          "properties": {
+            "imagePullSecrets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "wolf": {
+          "type": "object",
+          "properties": {
+            "config": {
+              "type": "object",
+              "properties": {
+                "appRedirectHostK8s": {
+                  "type": "string"
+                },
+                "appRedirectHostTensor": {
+                  "type": "string"
+                },
+                "appRedirectUrlsK8s": {
+                  "type": "string"
+                },
+                "appRedirectUrlsTensor": {
+                  "type": "string"
+                },
+                "postgresUrl": {
+                  "type": "string"
+                }
+              }
+            },
+            "image": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                }
+              }
+            },
+            "service": {
+              "type": "object",
+              "properties": {
+                "dashboard": {
+                  "type": "object",
+                  "properties": {
+                    "ingress": {
+                      "type": "object",
+                      "properties": {
+                        "exprs": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "object",
+                              "properties": {
+                                "opValue": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "apisixDashboardNeeds": {
+      "type": "array"
+    },
+    "apisixIngressControllerNeeds": {
+      "type": "array"
+    },
+    "grafanaNeeds": {
+      "type": "array"
+    },
+    "rampartDashboardNeeds": {
+      "type": "array"
+    },
+    "rampartUINeeds": {
+      "type": "array"
+    },
+    "wolfRbacNeeds": {
+      "type": "array"
+    }
+  }
+}

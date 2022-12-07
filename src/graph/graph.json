@@ -1,0 +1,426 @@
+{
+    "$id": "https://rampart.petuum.com/rampart-schemas/graph.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Rampart Graph Spec",
+    "description": "Defines schema for rampart graph specification",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "graph": {
+            "$ref": "#/$defs/graph"
+        },
+        "deploy": {
+            "type": "boolean"
+        }
+    },
+    "required": [
+        "graph"
+    ],
+    "$defs": {
+        "graph": {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "$ref": "#/$defs/components"
+                },
+                "flows": {
+                    "$ref": "#/$defs/flows"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "components",
+                "flows"
+            ]
+        },
+        "components": {
+            "type": "object",
+            "patternProperties": {
+                "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$": {
+                    "$ref": "#/$defs/component"
+                }
+            },
+            "additionalProperties": false
+        },
+        "flows": {
+            "type": "object",
+            "patternProperties": {
+                "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$": {
+                    "$ref": "#/$defs/flow"
+                }
+            },
+            "additionalProperties": false
+        },
+        "io": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/volumeIO"
+                },
+                {
+                    "$ref": "#/$defs/pulsarIO"
+                },
+                {
+                    "$ref": "#/$defs/repositoryIO"
+                }
+            ]
+        },
+        "component": {
+            "type": "object",
+            "properties": {
+                "chart": {
+                    "$ref": "#/$defs/chart"
+                },
+                "config": {
+                    "type": "object"
+                },
+                "inputs": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[a-zA-Z0-9_-]*$": {
+                            "$ref": "#/$defs/io"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "outputs": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[a-zA-Z0-9_-]*$": {
+                            "$ref": "#/$defs/io"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "namespace": {
+                    "$ref": "#/$defs/k8sRegex"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "needs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/k8sRegex"
+                    }
+                },
+                "ingressNeeded": {
+                    "type": "boolean"
+                },
+                "auxConfig": {
+                    "type": "object"
+                },        
+                "$ui": {}
+            },
+            "required": [
+                "chart",
+                "config",
+                "inputs",
+                "outputs"
+            ],
+            "additionalProperties": false
+        },
+        "chart": {
+            "properties": {
+                "repo": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string",
+                    "anyOf": [
+                        {
+                            "pattern": "latest"
+                        },
+                        {
+                            "description": "Official Semver regex",
+                            "pattern": "^(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+                        }
+                    ]
+                },
+                "secret": {
+                    "$ref": "#/$defs/secretRef"
+                }
+            },
+            "required": [
+                "repo",
+                "name"
+            ],
+            "additionalProperties": false
+        },
+        "secretRef": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/k8sRegex"
+                },
+                {
+                    "$ref": "#/$defs/nullRegex"
+                }
+            ]
+        },
+        "volumeIO": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "volume"
+                },
+                "config": {
+                    "$ref": "#/$defs/volumeConfig"
+                },
+                "flow": {
+                    "$ref": "#/$defs/k8sRegex"
+                },
+                "$ui": {}
+            },
+            "required": [
+                "type",
+                "flow"
+            ],
+            "additionalProperties": false
+        },
+        "pulsarIO": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "pulsar"
+                },
+                "config": {
+                    "type": "object"
+                },
+                "flow": {
+                    "$ref": "#/$defs/k8sRegex"
+                },
+                "$ui": {}
+            },
+            "required": [
+                "type",
+                "flow"
+            ],
+            "additionalProperties": false
+        },
+        "repositoryIO": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "pattern": "repository"
+                },
+                "config": {
+                    "$ref": "#/$defs/volumeConfig"
+                },
+                "flow": {
+                    "$ref": "#/$defs/k8sRegex"
+                },
+                "$ui": {}
+            },
+            "required": [
+                "type",
+                "flow"
+            ],
+            "additionalProperties": false
+        },
+        "volumeConfig": {
+            "type": "object",
+            "properties": {
+                "mountPath": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "flow": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/volumeFlow"
+                },
+                {
+                    "$ref": "#/$defs/pulsarFlow"
+                },
+                {
+                    "$ref": "#/$defs/repositoryFlow"
+                }
+            ]
+        },
+        "volumeFlowConfig": {
+            "type": "object",
+            "properties": {
+                "size": {
+                    "type": "string"
+                },
+                "reclaimPolicy": {
+                    "type": "string",
+                    "enum": [
+                        "Retain",
+                        "Delete"
+                    ]
+                }
+            },
+            "required": [
+                "size"
+            ],
+            "additionalProperties": false
+        },
+        "volumeFlow": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "volume"
+                },
+                "config": {
+                    "$ref": "#/$defs/volumeFlowConfig"
+                },
+                "$ui": {}
+            },
+            "required": [
+                "type",
+                "config"
+            ],
+            "additionalProperties": false
+        },
+        "pulsarFlow": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "pulsar"
+                },
+                "config": {
+                    "type": "object"
+                },
+                "$ui": {}
+            },
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false
+        },
+        "repositoryFlow": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "repository"
+                },
+                "config": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/gitFlowConfig"
+                        },
+                        {
+                            "$ref": "#/$defs/dvcFlowConfig"
+                        }
+                    ]
+                },
+                "$ui": {}
+            },
+            "required": [
+                "type",
+                "config"
+            ],
+            "additionalProperties": false
+        },
+        "gitFlowConfig": {
+            "type": "object",
+            "properties": {
+                "size": {
+                    "type": "string"
+                },
+                "reclaimPolicy": {
+                    "type": "string",
+                    "enum": [
+                        "Retain",
+                        "Delete"
+                    ]
+                },
+                "kind": {
+                    "type": "string",
+                    "const": "git"
+                },
+                "remote": {
+                    "type": "string"
+                },
+                "secret": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "useremail": {
+                    "type": "string"
+                },
+                "defaultBranch": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "kind",
+                "size"
+            ],
+            "additionalProperties": false 
+        },
+        "dvcFlowConfig": {
+            "type": "object",
+            "properties": {
+                "size": {
+                    "type": "string"
+                },
+                "reclaimPolicy": {
+                    "type": "string",
+                    "enum": [
+                        "Retain",
+                        "Delete"
+                    ]
+                },
+                "kind": {
+                    "type": "string",
+                    "const": "dvc"
+                },
+                "remote": {
+                    "type": "string"
+                },
+                "secret": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "useremail": {
+                    "type": "string"
+                },
+                "defaultBranch": {
+                    "type": "string"
+                },
+                "storageRemote": {
+                    "type": "string"
+                },
+                "storageRemoteName": {
+                    "type": "string"
+                },
+                "storageSecret": {
+                    "type": "string"
+                },
+                "storageSecretType": {
+                    "type": "string",
+                    "const": "s3"
+                }
+            },
+            "required": [
+                "kind",
+                "size"
+            ],
+            "additionalProperties": false 
+        },
+        "k8sRegex": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "nullRegex": {
+            "type": "string",
+            "pattern": "(None)|(null)"
+        }
+    }
+}

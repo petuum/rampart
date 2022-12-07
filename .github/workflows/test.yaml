@@ -1,0 +1,52 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build_and_test_controller:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install -r src/graph/requirements.txt
+        python3 -m pip install -r src/mutating_webhook/requirements.txt
+        python3 -m pip install -r cli/requirements.txt
+        python3 -m pip install flake8 pytest-cov==2.6.1 coverage pytest-mock==3.6.1 pytest-asyncio==0.18.1
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 tests src --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 --max-line-length 100 src tests
+    - name: Test controller
+      env:
+        REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+        REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+        REGISTRY_ADDRESS: ${{ secrets.REGISTRY_ADDRESS }}
+        RAMPRT_VOLUME_FLOW_LIVENESS_PATH: /home/runner/work/rampart/rampart/src/graph_service/flows/volume_flow_liveness.py
+      run: |
+        python3 -m pytest tests/src/graph/* --cov=src/graph --cov-branch --cov-report= --junitxml=graph_report.xml
+        coverage report -m --omit="**/*test.py"
+        coverage html --omit="**/*test.py"
+        coverage xml --omit="**/*test.py"  -o htmlcov/coverage.xml
+    - name: Test cli
+      run: |
+        python3 -m pytest tests/cli/* --cov=cli --cov-branch --cov-report= --junitxml=cli_report.xml
+        coverage report -m --omit="**/*test.py"
+        coverage html --omit="**/*test.py"
+        coverage xml --omit="**/*test.py"  -o htmlcov/coverage.xml

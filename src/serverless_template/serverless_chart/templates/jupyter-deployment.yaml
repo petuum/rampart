@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-jupyter
+  labels:
+    app: jupyter
+    release: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyter
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: jupyter
+        release: {{ .Release.Name }}
+    spec:
+      volumes:
+      - name: {{ .Release.Name }}-serverless-pv-storage
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-serverless-pvc
+      containers:
+      - name: jupyter-container
+        image: registry.petuum.com/dev/rampart/jupyter:0.1
+        imagePullPolicy: Always
+        workingDir: /home/mount
+        env: 
+        - name: CHOWN_EXTRA
+          value: "/home/mount/"
+        - name: VOLUME_PATH
+          value: "/home/mount/app"
+        - name: NAMESPACE
+          value: default
+        securityContext:
+          runAsUser: 0
+        command: ["jupyter", "lab", "--ip", "0.0.0.0", "--allow-root", "--no-browser"] 
+        ports:
+        - containerPort: 8888
+        volumeMounts:
+        - mountPath: "/home/mount"
+          name: {{ .Release.Name }}-serverless-pv-storage
+      imagePullSecrets:
+      - name: stagingsecret

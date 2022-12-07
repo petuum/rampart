@@ -1,0 +1,17 @@
+inputs: list(include('IOSpec'))
+outputs: list(include('IOSpec'))
+provides: list(regex(r'^[a-zA-Z0-9_-]*[\*]?$'), required=False)
+requires: list(regex(r'^[a-zA-Z0-9_-]*[\*]?$'), required=False)
+
+---
+
+IOSpec: any(include('VolumeSpec'), include('PulsarSpec'))
+
+VolumeSpec:
+  name: regex(r'^[a-zA-Z0-9_-]*[\*]?$')
+  type: enum('volume')
+  mountPath: regex(r'^(?:/[^/\n\0]+)*$', required=False)
+
+PulsarSpec:
+  name: regex(r'^[a-zA-Z0-9_-]*[\*]?$')
+  type: enum('pulsar')

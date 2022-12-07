@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-serverless-pre-install-job
+  labels:
+    app: serverless
+    release: {{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook-weight": "-1"
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}-pre-install
+      labels:
+        app: serverless
+        release: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      volumes:
+      - name: {{ .Release.Name }}-serverless-pv-storage
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-serverless-pvc
+      containers:
+      - name: serverless-copy-src
+        image: registry.petuum.com/dev/rampart/init-copy:0.1
+        volumeMounts:
+        - mountPath: "/mount"
+          name: {{ .Release.Name }}-serverless-pv-storage
+        command:
+        - "cp"
+        - "-r"
+        - "/app"
+        - "/mount"
+      imagePullSecrets:
+      - name: stagingsecret
