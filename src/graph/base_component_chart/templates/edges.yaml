@@ -1,0 +1,74 @@
+{{- range $pvc := .Values.obj_list }}
+  {{- toYaml $pvc }}
+---
+{{- end }}
+{{ toYaml .Values.preset }}
+---
+{{ toYaml .Values.edge_config_map}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Release.Name }}-source
+data:
+  run_volume_liveness.py: {{ quote $.Values.appSource }}
+---
+{{- with .Values.obj_list }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-volume-liveness-service
+  labels:
+    component: {{ $.Release.Name }}-volume-liveness-service
+    app: {{ $.Release.Name }}-volume-liveness-service
+    release: {{ $.Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-volume-liveness-service
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-volume-liveness-service
+        component: {{ $.Release.Name }}-volume-liveness-service
+        release: {{ $.Release.Name }}
+    spec:
+      containers:
+        - name: app
+          image: tiangolo/uvicorn-gunicorn-fastapi:python3.8-slim 
+          imagePullPolicy: Always
+          resources: {}
+          command:
+          - uvicorn
+          - run_volume_liveness:app
+          - --port
+          - "8000"
+          - --host
+          - "0.0.0.0"
+          volumeMounts:
+          - name: source
+            mountPath: /app
+      volumes:
+      - name: source
+        configMap:
+          name: {{ $.Release.Name }}-source
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-volume-liveness-service
+  labels:
+    component: {{ $.Release.Name }}-volume-liveness-service
+    app: {{ $.Release.Name }}-volume-liveness-service
+    release: {{ $.Release.Name }}
+spec:
+  ports:
+    - port: 8000
+      targetPort: 8000 
+      name: http
+  selector:
+    app: {{ $.Release.Name }}-volume-liveness-service
+    release: {{ $.Release.Name }}
+
+{{- end }}

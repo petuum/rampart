@@ -1,0 +1,6 @@
+description: >
+  Translates text to spanish language
+functions:
+  to_spanish:
+      handler: "to_spanish:to_spanish"
+      method: "POST"

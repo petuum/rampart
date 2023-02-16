@@ -1,0 +1,6 @@
+# Copyright 2023 Petuum, Inc. All Rights Reserved.
+
+# Secondary K8 Dockerfile for copying source files
+FROM busybox
+
+COPY ./app /app

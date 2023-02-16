@@ -1,0 +1,100 @@
+{{- range $pvc := .Values.pvc_list }}
+  {{- toYaml $pvc }}
+---
+{{- end }}
+{{ if or .Values.pvc_list .Values.empty_dir_list }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-flows-service
+  labels:
+    component: {{ $.Release.Name }}-flows-service
+    app: {{ $.Release.Name }}-flows-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-flows-service
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-flows-service
+        component: {{ $.Release.Name }}-flows-service
+        rampart-disable-edges: 'true'
+    spec:
+      containers:
+        - name: app
+          image: {{ $.Values.flow_image }}
+          imagePullPolicy: Always
+          resources: {}
+          command:
+          - uvicorn
+          - run_flows_app:app
+          - --port
+          - "8000"
+          - --host
+          - "0.0.0.0"
+          volumeMounts:
+          {{- range $.Values.pvc_list }}
+          - mountPath: {{ printf "/volume_flow_mount/%s" .metadata.name }}
+            name: {{ .metadata.name }}-pv
+          {{- end }}
+          {{- range $.Values.empty_dir_list }}
+          - mountPath: {{ printf "/volume_flow_mount/%s" .name }}
+            name: {{ .name }}
+          {{- end }}
+      volumes:
+        {{- range $.Values.pvc_list }}
+        - name: {{ .metadata.name }}-pv
+          persistentVolumeClaim:
+            claimName: {{ .metadata.name }}
+        {{- end }}
+        {{- range $.Values.empty_dir_list }}
+        - name: {{ .name }}
+          emptyDir: {}
+        {{- end }}
+        {{- range $.Values.secret_volume_list }}
+        - name: {{ .name }}
+          secret:
+            defaultMode: {{ .secret.defaultMode }}
+            secretName: {{ .secret.secretName }}
+        {{- end }}
+      imagePullSecrets:
+        - name: {{ $.Values.pull_image_secret_name }}
+      {{ if $.Values.init_containers }}
+      initContainers:
+        {{- range $.Values.init_containers }}
+        - name: {{ .name }}
+          image: {{ .image }}
+          env:
+          {{- range .env }}
+          - value: {{ .value }}
+            name: {{ .name }}
+          {{- end }}
+          command: {{- toYaml .command | nindent 10 }}
+          volumeMounts:
+            {{- range .mount_volumes }}
+            - mountPath: {{ .mountPath }}
+              name: {{ .name }}
+            {{- end }}
+        {{- end }}
+      {{ end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ $.Release.Name }}-flows-service
+    app.kubernetes.io/managed-by: Helm
+    rampart-enable-edges: 'true'
+  name: {{ $.Release.Name }}-flows-service
+spec:
+  ports:
+  - name: service-endpoint
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: {{ $.Release.Name }}-flows-service
+---
+{{ end }}

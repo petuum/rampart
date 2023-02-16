@@ -1,0 +1,9 @@
+description: >
+  Uses vaderSentiment package to predict sentiment scores for incoming request sentence.
+functions:
+  predict:
+      handler: "sentiment_analyzer:predict"
+      method: "POST"
+  respond:
+      handler: "sentiment_analyzer:respond"
+      method: "POST"
