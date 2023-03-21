@@ -1,9 +1,9 @@
-# rampart
+# Rampart
 Rampart is an open system for MLOps that allows easy provisioning of custom infrastructure from templates. It is designed with the principles of composability, automation, and scalability, for developers to enable simple infrastructure management, modular pipeline development, seamless deployment, and experiment management.
 
-Developers could use the drag-and-drop GUI to spin up infrastructure from a template and get started on a new project in minutes, without any help from a system admin. As an extensible system for interoperability, Rampart can be used to deploy any software (i.e., OSS, third-party software, or any custom code) in addition to a library of native Rampart components as parts of custom infrastructure.
+Developers can use the drag-and-drop GUI to spin up infrastructure from a template and get started on a new project in minutes, without any help from a system admin. As an extensible system for interoperability, Rampart can be used to deploy any software (i.e., OSS, third-party software, or any custom code) in addition to a library of native Rampart components as parts of custom infrastructure.
 
-It’s Infrastructure-as-a-Graph approach represents commonly used AIML application patterns as components, such as Batch Data Uploader, Batch Executor, Ray cluster and Tensorboard visualizer. Components are connected through “flows” which can be NFS volumes, pulsar streaming or repositories. Infrastructure graphs can be composed quickly and replicated, customized, deployed, or updated live.
+Its Infrastructure-as-a-Graph approach represents commonly used AIML application patterns as components, such as Batch Data Uploader, Batch Executor, Ray cluster and Tensorboard visualizer. Components are connected through “flows” which can be NFS volumes, pulsar streaming or repositories. Infrastructure graphs can be composed quickly and replicated, customized, deployed, or updated live.
 
 ![](/doc/images/rampart-ui.png)
 
@@ -13,7 +13,7 @@ Rampart is one of a series of tools that make up the MLOps OSS repertoire that P
 This is covered by a separate repo which is coming soon.
 
 # Usage
-Rampart does many things. The quickest way to familiarize with Rampart is by creating an MLOps deployment, which you can usually start with deploying a graph.  You can import a graph represented in the YAML below:
+Rampart does many things. The quickest way to familiarize with Rampart is by creating an MLOps deployment, which you can usually start with deploying a graph. You can import a graph represented in the YAML below:
 ```yaml
 apiVersion: rampart.petuum.com/v1beta2
 kind: RampartGraph
@@ -43,6 +43,9 @@ spec:
           size: 1Gi
 ```
 This is a simple Rampart Graph demonstrating how a component called Batch Uploader is connected to a Volume Flow named `batch-input`.
+
+> **Note:**
+> A Rampart Graph is deployed on a Kubernetes cluster as a [custom resource (CR)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) named RampartGraph. The following command requires the [kubectl](https://kubernetes.io/docs/reference/kubectl/kubectl/) command line tool to run.
 
 Run this code to deploy this graph:
 ```bash
