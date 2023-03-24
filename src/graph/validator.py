@@ -19,6 +19,22 @@ from .utils.classes import ValidationError
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.INFO)
 
+"""
+This module acts as an validating admission webhook:
+https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#validatingadmissionwebhook
+
+and as a conversion webhook:
+https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/
+
+The validator exposes three endpoints:
+
+/healthz: returns the status of the validator
+/validate: returns whether the graph yaml is valid
+/conversion: converts between different RampartGraph custom resource versions.
+             Fields/features that are missing in older versions may get default values in the
+             newer versions. 
+"""
+
 
 class Validator(object):
     def __init__(self):
@@ -81,7 +97,8 @@ class Validator(object):
     async def _validate(self, request, metadata, generated_name):
         graph = request["object"]
 
-        # Graph is marked for deletion, no need to validate
+        # Graph is marked for deletion, no need to validate (otherwise there is no way to delete
+        # invalid graphs)
         if "deletionTimestamp" in graph["metadata"]:
             return {"allowed": True}
         try:
@@ -96,8 +113,6 @@ class Validator(object):
             try:
                 await get_global_repo_manager().update_provides()
                 await graph.validate(validate_specs=False)
-
-                # TODO: move this to controller
             finally:
                 self._infra_lock.release()
             return {"allowed": True}
@@ -112,6 +127,16 @@ class Validator(object):
                     }
 
     async def _handle_conversion(self, request):
+        """
+        Currently there are two versions `v1beta1` and `v1beta2`. The only difference between
+        the two is that `v1beta2` adds a field `spec.deploy`: boolean, which specifies if
+        we want the graph to actually be deployed. Setting it to false will undeploy everything,
+        but leave the CRD.
+
+        Converting to `v1beta2` from `v1beta1` will just add `spec.deploy: True`
+        `v1beta1` cannot fully represent `v1beta2` graphs.
+        """
+
         request_json = await request.json()
         request_version = request_json["apiVersion"]
         request = request_json["request"]
