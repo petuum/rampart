@@ -40,6 +40,9 @@ def _is_url(string):
 
 
 class ComponentChart(BaseElement):
+    """
+    This class manages the helm chart for a single component
+    """
     def __init__(self, chart_name, chart_version, url, graph_metadata):
         self._url = url
         self._repo_name = self._generate_repo_name()
@@ -75,6 +78,11 @@ class ComponentChart(BaseElement):
                 chart_name, chart_version, KubernetesName(chart_repo), graph_metadata)
 
     async def validate(self):
+        """
+        Throws a `ValidationError` if this componentchart or any of its children are
+        invalid. This call must be made before any function with the `@required_validated` decorator
+        is called.
+        """
         #  TODO: enable in validator pod
         if not self._url:
             raise ValidationError(
@@ -113,6 +121,9 @@ class ComponentChart(BaseElement):
     @require_validated
     def to_deployment_yaml(self, name, namespace, values,
                            recreate_pods, deployment_kwargs=None, needs=None):
+        """
+        Fill out the requires yaml files needed for the `releases` section of the helmfile config.
+        """
         yaml = copy.deepcopy(HELMFILE_TEMPLATE)
         yaml["values"] = [values]
         if deployment_kwargs:
@@ -141,6 +152,9 @@ class ComponentChart(BaseElement):
         pass
 
     def _generate_repo_name(self):
+        """
+        Generates the internal name of the repository for this chart.
+        """
         url = self._url.strip("/")
         parts = urllib.parse.urlsplit(url)
         username, password = parts.username, parts.password
@@ -164,6 +178,9 @@ class ComponentChart(BaseElement):
 
 
 class URLComponentChart(ComponentChart):
+    """
+    A component chart whos repo is specified by the RampartGraph CRD as a URL
+    """
     # TODO: add tests
     def __init__(self, chart_name, chart_version, url,
                  secret_name, graph_metadata):
@@ -201,6 +218,9 @@ class URLComponentChart(ComponentChart):
 
 
 class SecretComponentChart(ComponentChart):
+    """
+    A component chart whos repo is specified by the RampartGraph CRD as a kubernetes secret.
+    """
     # TODO: add tests
     def __init__(self, chart_name, chart_version, repo_name, graph_metadata):
         metadata = Metadata(None, f"{repo_name.kubernetes_view}/{chart_name}",

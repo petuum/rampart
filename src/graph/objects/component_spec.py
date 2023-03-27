@@ -19,6 +19,12 @@ core_api = kubernetes.client.CoreV1Api()
 
 
 class ComponentSpec(BaseElement):
+    """
+    This class manages all the information about the component that is specified in the remote
+    helm chart.
+
+    If Components are values, then ComponentSpecs are types.
+    """
     def __init__(self, annotations, repo_name, chart_name, chart_version, chart_url):
 
         _name = f"component-spec-{chart_name}-{chart_version}-{repo_name}"
@@ -44,6 +50,13 @@ class ComponentSpec(BaseElement):
         self._annotations = annotations
 
     def _update_io_specs(self, io_specs, io_part: IOPart):
+        """
+        Internal function to generalize handling inputs and outputs
+
+        args:
+            io_specs: specifications about what the edges should be
+            io_part (edge.IOPart): whether this is for inputs or outputs
+        """
         for io_spec in io_specs:
             io_name = io_spec["name"]
             io_type = FlowType[io_spec["type"].upper()]
@@ -82,6 +95,11 @@ class ComponentSpec(BaseElement):
         return self._chart_reference
 
     async def validate(self):
+        """
+        Throws a `ValidationError` if this component specification or any of its children are
+        invalid. This call must be made before any function with the `@required_validated` decorator
+        is called.
+        """
         if self._validated:
             return
 
