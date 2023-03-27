@@ -53,6 +53,9 @@ LOG.setLevel(logging.INFO)
 
 
 class Graph(BaseElement):
+    """
+    This graph manages all of the validation, deployment, and teardown for a single rampart graph.
+    """
     def __init__(self,
                  metadata,
                  pulsar_namespace,
@@ -85,7 +88,6 @@ class Graph(BaseElement):
     async def _build_aux_chart(graph_json, component_charts, metadata):
         """
         produces the hidden aux-chart based on default spec
-        }
         """
         logger = GraphLogger(LOG, {"metadata": metadata})
         aux_chart = None
@@ -106,6 +108,15 @@ class Graph(BaseElement):
 
     @classmethod
     async def _parse_json(cls, json_obj, metadata, validate_specs=True):
+        """
+        Class function to turn a json object into a a set of components, component charts,
+        flows, and a boolean for whether the graph is to be deployed
+
+        args:
+            json_obj: dictionary for the kubernetes values for the graph
+            metadata (basetype.Metadata): namespace, name, uid for the graph
+            validate_specs (bool): whether to pull from the remote helm repos. set to false
+        """
         logger = GraphLogger(LOG, {"metadata": metadata})
 
         graph_json = json_obj['graph']
@@ -122,6 +133,8 @@ class Graph(BaseElement):
         # build aux-chart based on graph spec
         aux_chart = await cls._build_aux_chart(graph_json, component_charts, metadata)
 
+        # Generate component instance objects for each of the components, and then generate
+        # component chart objects as necessary
         for comp_inst_name, component in graph_json["components"].items():
             logger.info(f"found component {comp_inst_name}", extra={"phase": GraphPhase.PARSING})
             comp_uid = ComponentInstance.generate_name(
@@ -163,6 +176,7 @@ class Graph(BaseElement):
 
         preexisting_namespaces = {namespace.metadata.name for namespace in namespaces}
 
+        # Generate the list of namespaces we manage excluding the namespaces added by this graph
         for graph in graphs:
             if (graph["metadata"]["name"] != metadata.name.kubernetes_view or
                     graph["metadata"]["namespace"] != metadata.namespace.kubernetes_view):
@@ -191,6 +205,9 @@ class Graph(BaseElement):
                     if namespace in preexisting_namespaces:
                         preexisting_namespaces.remove(namespace)
 
+        # Here we check that there are no namespace overlaps between the components in this graph
+        # and from other graphs, and that all of the infrastructure requirements of this graph are
+        # met
         for comp_inst_name, component in components_dict.items():
             if component.metadata.namespace.kubernetes_view in preexisting_namespaces:
                 errors.append(f"Namespace {component.metadata.namespace.kubernetes_view} "
@@ -210,6 +227,17 @@ class Graph(BaseElement):
 
     @classmethod
     async def from_json(cls, graph_json, metadata, validate_specs=True, workdir: str = ""):
+        """
+        Return a Graph object from the specified json (generally the json found
+        in a RampartGraph CRD).
+
+        args:
+            graph_json: dictionary object representing all the specifications of the graph
+            metadata (basetype.Metadata): namespace, name, uid for the graph
+            validate_specs (bool): whether to pull from the remote helm repos. set to false
+                                   when validation time is critical
+            workdir (str): path to a temporary directory to store output for helm and helmfile
+        """
         logger = GraphLogger(LOG, {"metadata": metadata})
         logger.info("beginning parsing", extra={"phase": GraphPhase.PARSING})
 
@@ -251,6 +279,18 @@ class Graph(BaseElement):
                      workdir=workdir)
 
     async def validate(self, validate_specs):
+        """
+        Throws a `ValidationError` if the graph is invalid. This call must be made
+        before any function with the `@required_validated` decorator is called.
+
+        args:
+            validate_specs (Bool):
+                True -> Pull the helm charts for this graph and validate with all the
+                        Rampart component specification there. This may be expensive,
+                        so only use this flag when time is not of the essence. For example,
+                        validating webhooks have a non-bypassable timeout limit
+                False -> Do not pull the helm charts
+        """
         errors = []
 
         try:
@@ -342,6 +382,7 @@ class Graph(BaseElement):
 
     @property
     def namespaces(self):
+        """Returns a list of namespaces for the graph's components"""
         return [component.namespace.name.kubernetes_view if component.namespace else
                 component.metadata.namespace.kubernetes_view
                 for component in self._components.values()]
@@ -364,6 +405,7 @@ class Graph(BaseElement):
     @property
     @require_validated
     def provided(self):
+        """Returns a list of infrastructure that this graph provides"""
         provided = set()
         for component_chart in self._component_charts.values():
             component_spec = component_chart.component_spec
@@ -372,6 +414,7 @@ class Graph(BaseElement):
 
     @require_validated
     async def _deploy_namespaces(self) -> None:
+        """Deploys the component namespaces for this graph"""
         self._logger.info(
             "deploying namespaces", extra={"phase": GraphPhase.DEPLOYMENT})
         # TODO: find an appropriate ownerref anchor for the subnamespace
@@ -384,6 +427,10 @@ class Graph(BaseElement):
 
     @require_validated
     async def _deploy_edges(self) -> List[asyncio.Task]:
+        """
+        Deploys all the edges and flows for this graph.
+        Return a list of tasks that need finishing at some later point.
+        """
         self._logger.info(
             "deploying edges and flows", extra={"phase": GraphPhase.DEPLOYMENT})
         # group flows by their types
@@ -413,6 +460,11 @@ class Graph(BaseElement):
 
     @require_validated
     async def _deploy_components(self, helmfile_args=None, helmfile_kwargs=None):
+        """
+        Deploys all the components for this graph.
+
+        Generates helmfile configs in `workdir`, and then calls `helmfile sync` on the files
+        """
         self._logger.info(
             "deploying components", extra={"phase": GraphPhase.DEPLOYMENT})
         helmfile_args = helmfile_args or []
@@ -464,6 +516,7 @@ class Graph(BaseElement):
 
     @require_validated
     async def deploy(self, helmfile_args=None, helmfile_kwargs=None) -> None:
+        """Deploys the namespaces, edges, and then components for this graph"""
         if not self._deploy:
             raise TypeError("Cannot deploy a graph with field `deploy: false`")
         await deployment_util.required_deploy(self._deploy_namespaces)
@@ -485,6 +538,7 @@ class Graph(BaseElement):
 
     @require_validated
     async def undeploy(self):
+        """If the `deploy` field is set to false, we perform teardown on the graph deployment"""
         if self._deploy:
             raise TypeError("Cannot undeploy a graph with field `deploy: true`")
         await self.teardown_namespaces(self.namespaces)
@@ -494,11 +548,13 @@ class Graph(BaseElement):
 
     @require_validated
     async def teardown_old_namespaces(self, old_namespace_list):
+        """We need to manually tear down namespaces that no longer are part of the graph"""
         current_namespaces = set(self.namespaces)
         return await self.teardown_namespaces(
             [namespace for namespace in old_namespace_list if namespace not in current_namespaces])
 
     async def teardown_namespaces(self, namespaces):
+        """Tears down all the provided namespaces"""
         self._logger.info(
             f"uninstalling {namespaces}", extra={"phase": GraphPhase.TEARDOWN})
         await asyncio.gather(
@@ -514,8 +570,9 @@ class Graph(BaseElement):
                 namespace)
 
     def _clean_up_callback(self, release_name):
-        assert release_name in ["component", "edges"]
         """Returns a function to clean up helm on deployment cancellation"""
+        assert release_name in ["component", "edges"]
+
         # TODO: run helm rollback with timeout before falling back to uninstall
         async def callback():
             self._logger.info(f"deployment cancelled, cleaning up {self.namespaces}",
@@ -541,6 +598,7 @@ class Graph(BaseElement):
 
     @classmethod
     async def remove_orphaned_pulsar(cls, graph_namespaces):
+        """Delete all pulsar namespaces for graphs that have been deleted"""
         # TODO: we can probably remove this
         try:
             logger = GraphLogger(LOG, {"metadata": None})
@@ -586,6 +644,7 @@ class Graph(BaseElement):
 
     @classmethod
     async def teardown(cls, metadata, workdir) -> None:
+        """Tear down all the deployed objects for a graph"""
         repo_manager = get_global_repo_manager()
         repo_manager_gc_task = repo_manager.gc_graph(metadata)
 
