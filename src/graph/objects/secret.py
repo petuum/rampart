@@ -13,6 +13,10 @@ core_api = kubernetes.client.CoreV1Api()
 
 
 class Secret(BaseElement):
+    """
+    Represents username and password for connecting to remote helm repositories, stored using
+    a kubernetes secret.
+    """
     def __init__(self, namespace, name):
         metadata = Metadata(namespace, name, None)
         super().__init__(metadata)
@@ -24,6 +28,10 @@ class Secret(BaseElement):
         pass
 
     async def validate(self):
+        """
+        Throws a `ValidationError` if the component is invalid. This call must be made
+        before any function with the `@required_validated` decorator is called.
+        """
         if isinstance(self.name, KubernetesName):
             name = self.name.kubernetes_view
         else:
