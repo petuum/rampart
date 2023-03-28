@@ -142,6 +142,7 @@ async def check_bare_clone(repo_dir):
 
 @app.get(git_metadata_endpoint)
 async def get_git_metadata(flow_title):
+    """Returns all the relevant branch and tag information about a flow"""
     repo_dir = os.path.join(root_dir, flow_title)
     is_bare_clone = await check_bare_clone(repo_dir)
     if is_bare_clone:
@@ -163,6 +164,7 @@ async def get_git_metadata(flow_title):
 
 @app.get(git_health_check)
 async def git_health_check(flow_title):
+    """Check if the git flow is working"""
     repo_dir = os.path.join(root_dir, flow_title)
     is_bare_clone = await check_bare_clone(repo_dir)
     if is_bare_clone:

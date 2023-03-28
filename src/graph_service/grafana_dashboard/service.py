@@ -34,6 +34,9 @@ GRAFANA_NAMESPACE = f"{controller_namespace}-infra-grafana"
 
 
 async def get_dcgm_metrics():
+    """
+    Return all gpu (NVIDIA Data Center GPU Manager) metrics that we have access to
+    """
     async with httpx.AsyncClient() as client:
         response = await client.get(
             f"http://component-prometheus-server.{GRAFANA_NAMESPACE}.svc.cluster.local:80"
@@ -45,6 +48,12 @@ async def get_dcgm_metrics():
 
 async def create_dashboard(graph_namespace, graph_name, component_namespaces,
                            dashboard_id=None, dashboard_uid=None, version=0):
+    """
+    Generate the payload for creating or updating a Grafana dashboard for a given graph
+    and component.
+
+    Setting dashboard_id, dashboard_uid, and version will update instead of create
+    """
     dir_path = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(dir_path, "usage_template.json")) as f:
         template = json.load(f)
@@ -89,6 +98,10 @@ async def create_dashboard(graph_namespace, graph_name, component_namespaces,
 async def create_and_get_dashboard(namespace, name, component_namespaces,
                                    dashboard_id, dashboard_uid, version):
 
+    """
+    Creates or updates a dashboard for a graph with a given set of components, and returns
+    the response from the Grafana api
+    """
     template = await create_dashboard(namespace, name, component_namespaces,
                                       dashboard_id, dashboard_uid, version)
 
@@ -131,6 +144,10 @@ async def create_and_get_dashboard(namespace, name, component_namespaces,
 
 async def get_or_create_dashboard(namespace, name, component_namespaces,
                                   dashboard_id, dashboard_uid, version):
+    """
+    Tries to get the existing dashboard for a component.
+    If that fails, then create new dashboards first.
+    """
     url = (
         f"http://admin:admin@component-grafana.{GRAFANA_NAMESPACE}"
         f".svc.cluster.local/grafana/api/dashboards/uid/{dashboard_uid}")
@@ -153,6 +170,7 @@ async def get_or_create_dashboard(namespace, name, component_namespaces,
 
 
 async def delete_dashboard(uid):
+    """Deletes a dashboard"""
     url = (
         f"http://admin:admin@component-grafana.{GRAFANA_NAMESPACE}"
         f".svc.cluster.local/grafana/api/dashboards/uid/{uid}")

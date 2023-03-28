@@ -99,6 +99,9 @@ LOG.setLevel(logging.INFO)
 
 
 async def pulsar_health_check(flow_title):
+    """
+    Returns "normal" if pulsar is working for the flow, "error" otherwise
+    """
     client = pulsar.Client(PULSAR_CLIENT_SERVICE)
     topic = flow_title.replace("-", "_") + "_healthcheck"
     producer = client.create_producer(topic)
@@ -124,11 +127,13 @@ async def pulsar_health_check(flow_title):
 
 @app.on_event('startup')
 async def watch_graphs():
+    """Launches a neverending task for watching for all RampartGraph CR changes."""
     asyncio.create_task(watch_graphs_task())
 
 
 @app.get(all_status_endpoint)
 async def get_all_status():
+    """Returns the status of all graphs in the cluster."""
     graph_objs = app_db.all()
     tasks = []
     for graph_obj in graph_objs:
@@ -150,6 +155,7 @@ async def get_all_status():
 
 @app.get(status_endpoint)
 async def get_status(app_id):
+    """Returns the status of the graph for app `app_id`"""
     try:
         namespace, name, metadata = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -297,6 +303,7 @@ async def get_status(app_id):
 
 @app.post(graph_endpoint)
 async def create_graph(config_model: GraphModel):
+    """Creates a new graph and app given an input graph specification"""
     config = {
         "apiVersion": config_model.apiVersion,
         "kind": config_model.kind,
@@ -353,6 +360,10 @@ async def create_graph(config_model: GraphModel):
 
 @app.get(single_app_endpoint)
 async def get_app(app_id):
+    """
+    Returns all the relevant information about an app:
+        name, namespace, deployment status, graph object, all previous versions, modified timestamp
+    """
     try:
         namespace, name, metadata = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -425,6 +436,9 @@ async def get_app(app_id):
 
 @app.post(patch_graph_endpoint)
 async def patch_app(app_id, config_model: GraphModel):
+    """
+    Creates a new graph for an existing app. Does not activate the new graph
+    """
     #  This endpoint will only work on existing graphs, due to the fact that
     #  app_id is currently also the graph_uid. Therefore, if there is a patch
     #  for an app_id for a graph that doesnt exist, the uid will be different
@@ -499,6 +513,9 @@ async def patch_app(app_id, config_model: GraphModel):
 
 @app.delete(single_app_endpoint)
 async def delete_app(app_id):
+    """
+    Deletes an app and all associated graphs
+    """
     try:
         namespace, name, metadata = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -533,6 +550,7 @@ async def delete_app(app_id):
 
 @app.get(graph_endpoint)
 async def get_graphs():
+    """Return all stored graphs"""
     graph_objs = app_db.all()
     result = []
     for graph_obj in graph_objs:
@@ -555,11 +573,13 @@ async def get_graphs():
 
 @app.get(app_endpoint)
 async def get_apps():
+    """Alias for get_graphs"""
     return await get_graphs()
 
 
 @app.get(version_endpoint)
 async def get_versioned_graph(app_id, version):
+    """Return the graph for a given app and version"""
     try:
         namespace, name, metadata = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -601,6 +621,7 @@ async def get_versioned_graph(app_id, version):
 
 @app.post(redeployment_endpoint)
 async def redeploy_graph(app_id, version, redeployModel: RedeployModel):
+    """Redeploy or undeploy the graph for a given app and version"""
     try:
         namespace, name, metadata = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -706,6 +727,7 @@ async def redeploy_graph(app_id, version, redeployModel: RedeployModel):
 
 @app.get(dashboard_endpoint)
 async def get_dashboard(app_id, version):
+    """Return the kubernetes dashboard for a given app and version"""
     try:
         namespace, name, _ = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -736,6 +758,10 @@ async def get_dashboard(app_id, version):
 
 @app.get(forward_directory_endpoint)
 async def forward_get_volume_tree(app_id, flow_title, path):
+    """
+    Passes on requests for getting volume flow file trees to the downstream service
+    for that flow
+    """
     try:
         namespace, name, _ = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -757,6 +783,10 @@ async def forward_get_volume_tree(app_id, flow_title, path):
 
 @app.get(forward_file_endpoint)
 async def forward_get_volume_file(app_id, flow_title, path):
+    """
+    Passes on requests for getting volume flow files to the downstream service
+    for that flow
+    """
     try:
         namespace, name, _ = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -778,6 +808,10 @@ async def forward_get_volume_file(app_id, flow_title, path):
 
 @app.get(forward_git_directory_endpoint)
 async def forward_get_git_tree(app_id, flow_title, path, branch=None, tag=None):
+    """
+    Passes on requests for getting git flow trees to the downstream service
+    for that flow
+    """
     try:
         namespace, name, _ = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -803,6 +837,10 @@ async def forward_get_git_tree(app_id, flow_title, path, branch=None, tag=None):
 
 @app.get(forward_git_file_endpoint, response_class=FileResponse)
 async def forward_get_git_file(app_id, flow_title, path, branch=None, tag=None):
+    """
+    Passes on requests for getting git flow files to the downstream service
+    for that flow
+    """
     try:
         namespace, name, _ = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -828,6 +866,10 @@ async def forward_get_git_file(app_id, flow_title, path, branch=None, tag=None):
 
 @app.get(forward_git_metadata_endpoint)
 async def forward_get_git_metadata(app_id, flow_title):
+    """
+    Passes on requests for getting git flow metadata to the downstream service
+    for that flow
+    """
     try:
         namespace, name, _ = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -848,6 +890,10 @@ async def forward_get_git_metadata(app_id, flow_title):
 
 @app.get(input_edge_endpoint)
 async def forward_get_input_edge_liveness(app_id, component, edge):
+    """
+    Passes on requests for getting volume flow liveness to the downstream service
+    for that flow
+    """
     try:
         namespace, name, _ = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -889,6 +935,10 @@ async def forward_get_input_edge_liveness(app_id, component, edge):
 
 @app.get(output_edge_endpoint)
 async def forward_get_output_edge_liveness(app_id, component, edge):
+    """
+    Passes on requests for getting volume flow liveness to the downstream service
+    for that flow
+    """
     try:
         namespace, name, _ = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -930,6 +980,7 @@ async def forward_get_output_edge_liveness(app_id, component, edge):
 
 @app.get(grafana_dashboard_endpoint)
 async def get_grafana_dashboard(app_id):
+    """Returns the grafana dashboard for an app"""
     try:
         namespace, name, _ = await get_metadata_from_app_id(app_id)
     except KeyError:
@@ -952,11 +1003,13 @@ async def get_grafana_dashboard(app_id):
 
 @app.get(graphs_schema_endpoint)
 async def get_graphs_schema():
+    """Returns the current graph syntatic schema"""
     return FileResponse("./schema.json")
 
 
 @app.post(node_configs_endpoint)
 async def create_node_configs(node_configs_req: NodeConfigsModel):
+    """Creates and stores a node config"""
     uuid_str = generate_uuid_str()
     timestamp = datetime.now(timezone.utc).astimezone().isoformat()
     res = {"id": uuid_str,
@@ -1053,6 +1106,9 @@ async def delete_node_configs_by_id(req_uuid):
 
 @app.get(component_links_endpoint)
 async def get_component_links(app_id):
+    """
+    Returns all the endpoints that a component exposes.
+    """
     try:
         # TODO: change the name of the third result away from metadata
         namespace, name, metadata = await get_metadata_from_app_id(app_id)

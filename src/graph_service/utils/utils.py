@@ -13,6 +13,7 @@ graph_versions_db = TinyDB('/etc/graphs/versions.json')
 
 
 def filter_metadata(graph_obj):
+    """Remove all kubernetes metadata besides name and namespace, and remove the `deploy` field"""
     if "metadata" not in graph_obj:
         return
 
@@ -40,6 +41,7 @@ def app_id_from_metadata(metadata):
 
 
 def get_latest_version(namespace, name):
+    """Returns the highest version number for an app"""
     graph_query = Query()
     graph_versions = graph_versions_db.search((graph_query.namespace == namespace)
                                               & (graph_query.name == name))
