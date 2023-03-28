@@ -140,6 +140,9 @@ class ComponentInstance(BaseElement):
             raise ValidationError({"'rampart-flows' is not allowed as a component name"})
 
         async def _validate_edges(target: dict, target_spec: dict):
+            """
+            Function to generalize the code for both input and output edges
+            """
             for name, edge in target.items():
                 io_type = edge.type
                 flow = edge.flow
@@ -251,6 +254,9 @@ class ComponentInstance(BaseElement):
 
     @require_validated
     def _gen_aux_chart(self):
+        """
+        Creates a chart for auxiliary charts that are attached onto components.
+        """
         aux_chart_yaml = None
         if self._aux_chart:
             aux_values = self.body["auxConfig"]
@@ -280,6 +286,16 @@ class ComponentInstance(BaseElement):
 
     @require_validated
     def _get_edge_helm_yamls(self):
+        """
+        Returns the configurations for helmfile to use to deploy the edges for this component.
+        Includes:
+            * The list of kubernetes objects that need to be created directly
+            * The mutation preset that Rampart will use to modify component pods to attach edges
+            * ConfigMaps for the edges
+            * Hooks for the caller to finish for modifying deployed objects
+
+        See src/graph/base_component_chart/templates/edges.yaml for where they are used
+        """
         # TODO: Add unit tests
         edges = list(itertools.chain(self._inputs.values(), self._outputs.values()))
         k8s_objects = []
@@ -293,10 +309,13 @@ class ComponentInstance(BaseElement):
             post_deploy_hooks.extend(edge.post_deploy_hooks(self.namespace, seen_flows))
             recursive_merge(edge.create_pod_preset_values(seen_flows), preset, merge_list=True)
             seen_flows.add(edge.flow)
+
+            # Used by the liveness service
             config_map_body.append(
                 {"name": edge.name.rampart_view,
                  "type": str(edge.type), "part": str(edge.part)})
 
+        # Attach config maps for the liveness services, so they can see the graph topology
         edge_config_map = config_map_template(
             self.name, self.namespace.name,
             {"component": self.name.kubernetes_view, "edges": yaml.dump(config_map_body)})
@@ -360,6 +379,7 @@ class ComponentInstance(BaseElement):
 
     @require_validated
     async def deploy(self):
+        """Actual deployment is provided by the `Graph` class"""
         pass
 
     @require_validated

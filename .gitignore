@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 
 # Vim
+*.swo
 *.swp
