@@ -25,6 +25,12 @@ crd_api = kubernetes.client.ApiextensionsV1Api()
 
 
 def require_validated(func):
+    """
+    Decorator that requires the instance object of the applied function to have
+    `validated` set to `True`.
+
+    Apply to functions that require the object to be validated.
+    """
     def wrapper(obj, *args, **kwargs):
         if not obj.validated:
             raise TypeError(f"Cannot deploy an unvalidated {type(obj)}: {obj.name}")
@@ -35,6 +41,10 @@ def require_validated(func):
 
 # TODO: Wrap the errors from these functions in DeploymentError instances
 async def required_deploy(func, *args, **kwargs):
+    """
+    Call `func` with the applied args and require it to not raise an error.
+    Use for deployment. Returns the result from `func`.
+    """
     try:
         return await func(*args, **kwargs)
     except Exception as e:
@@ -42,6 +52,11 @@ async def required_deploy(func, *args, **kwargs):
 
 
 async def optional_deploy(func, predicate=None, *args, **kwargs):
+    """
+    Call `func` with the applied args and allow it to fail if the
+    `predicate` function is true when applied to the exception to be raised.
+    Use for deployment. Returns the result from `func`.
+    """
     try:
         return await func(*args, **kwargs)
     except Exception as e:
@@ -52,6 +67,10 @@ async def optional_deploy(func, predicate=None, *args, **kwargs):
 
 
 async def required_teardown(func, *args, **kwargs):
+    """
+    Call `func` with the applied args and require it to not raise an error.
+    Use for teardown. Does not return anything.
+    """
     try:
         await func(*args, **kwargs)
     except Exception as e:
@@ -59,6 +78,11 @@ async def required_teardown(func, *args, **kwargs):
 
 
 async def optional_teardown(func, predicate=None, *args, **kwargs):
+    """
+    Call `func` with the applied args and allow it to fail if the
+    `predicate` function is true when applied to the exception to be raised
+    Use for teardown. Does not return anything.
+    """
     try:
         await func(*args, **kwargs)
     except Exception as e:
@@ -71,6 +95,29 @@ async def optional_teardown(func, predicate=None, *args, **kwargs):
 
 async def subprocess_with_return_code(graph_metadata, return_codes, interrupt_on_cancel,
                                       callback_on_cancel, *args, **kwargs):
+    """
+    Creates a subprocess with `*args, **kwargs`.
+
+    args:
+        graph_metadata (base_types.Metadata): Metadata of the graph this is called for.
+                                              Used for logging.
+        return_codes (List | Set | Dict): Some set of allowable return codes.
+                                          Will raise an exception if the subprocess's return code
+                                          is not one of these.
+        interrupt_on_cancel (bool): Interrupt the subprocess if the parent task is canceled.
+                                    Use for deployment tasks that can take a long time.
+                                    Note: You may need to clean up partial deployment after
+                                    this subprocess is canceled.
+        callback_on_cancel (function | None): Callback ran when cancelled. Not ran if `None`.
+                                              Use this to clean up partial deployment
+        *args: actual arguments of the subprocess to run. The first element is the command to run
+               See https://docs.python.org/3/library/asyncio-subprocess.html#asyncio.create_subprocess_exec # noqa E501
+        **kwargs: kwargs passed in to asyncio.create_subprocess_exec
+
+    returns:
+        return code, stdout, stderr of subprocess if the return code is in `return_codes`
+        raises a `DeploymentError` otherwise
+    """
 
     if not graph_metadata:
         logger = GraphLogger(LOG, {"metadata": None})
@@ -112,12 +159,53 @@ async def subprocess_with_return_code(graph_metadata, return_codes, interrupt_on
 
 async def required_subprocess(graph_metadata, interrupt_on_cancel,
                               callback_on_cancel, *args, **kwargs):
+    """
+    Creates a subprocess with `*args, **kwargs`, requiring it to succeed.
+
+    args:
+        graph_metadata (base_types.Metadata): Metadata of the graph this is called for.
+                                              Used for logging.
+        interrupt_on_cancel (bool): Interrupt the subprocess if the parent task is canceled.
+                                    Use for deployment tasks that can take a long time.
+                                    Note: You may need to clean up partial deployment after
+                                    this subprocess is canceled.
+        callback_on_cancel (function | None): Callback ran when cancelled. Not ran if `None`.
+                                              Use this to clean up partial deployment
+        *args: actual arguments of the subprocess to run. The first element is the command to run
+               See https://docs.python.org/3/library/asyncio-subprocess.html#asyncio.create_subprocess_exec # noqa E501
+        **kwargs: kwargs passed in to asyncio.create_subprocess_exec
+
+    returns:
+        stdout, stderr of subprocess if the return code is 0
+        raises a `DeploymentError` otherwise
+    """
     return await subprocess_with_return_code(
         graph_metadata, [0], interrupt_on_cancel, callback_on_cancel, *args, **kwargs)
 
 
 async def optional_subprocess(graph_metadata, interrupt_on_cancel,
                               callback_on_cancel, *args, **kwargs):
+    """
+    Creates a subprocess with `*args, **kwargs`, allowing it to fail.
+    
+    args:
+        graph_metadata (base_types.Metadata): Metadata of the graph this is called for.
+                                              Used for logging.
+        interrupt_on_cancel (bool): Interrupt the subprocess if the parent task is canceled.
+                                    Use for deployment tasks that can take a long time.
+                                    Note: You may need to clean up partial deployment after
+                                    this subprocess is canceled.
+        callback_on_cancel (function | None): Callback ran when cancelled. Not ran if `None`.
+                                              Use this to clean up partial deployment
+        *args: actual arguments of the subprocess to run. The first element is the command to run
+               See https://docs.python.org/3/library/asyncio-subprocess.html#asyncio.create_subprocess_exec # noqa E501
+        **kwargs: kwargs passed in to asyncio.create_subprocess_exec
+
+    returns:
+        stdout, stderr of subprocess if no `DeploymentError` was raised
+        The `DeploymentError` instance of `DeploymentError` was raised
+        Note: `DeploymentError` will be raised if the return code is not 0
+    """
     try:
         return_code, stdout, stderr = await required_subprocess(
             graph_metadata, interrupt_on_cancel, callback_on_cancel, *args, **kwargs)
@@ -129,6 +217,19 @@ async def optional_subprocess(graph_metadata, interrupt_on_cancel,
 @use_kubernetes_name
 async def deploy_sub_namespace(name, parent_name, owner_reference,
                                custom_api, core_api, graph_metadata=None):
+    """
+    Deploys a subnamespace.
+    See https://kubernetes.io/blog/2020/08/14/introducing-hierarchical-namespaces/
+
+    args:
+        name (str): Name of the namespace to deploy
+        parent_name (str): Name of the namespace to make this a subnamespace of
+        owner_reference (result from k8s_templates.owner_reference.owner_reference_template):
+            owner_reference to attach to the subnamespace anchor
+        custom_api: kubernetes.client.CustomObjectsApi instance to use
+        core_api: kubernetes.client.CoreV1Api instance to use
+        graph_metadata (base_types.Metadata): used for logging
+    """
     logger = GraphLogger(LOG, {"metadata": graph_metadata, "phase": "Deployment"})
     hns_body = copy.deepcopy(HNS_TEMPLATE)
     hns_body["metadata"]["namespace"] = parent_name
@@ -239,12 +340,23 @@ async def deploy_sub_namespace(name, parent_name, owner_reference,
 
 
 async def patch_pv(namespace, pvc_names, core_api, owner_reference, pvc_to_flow=None):
-    """Patch pv's for both component and flow.
+    """Patch PV's for both component and flow.
     Reclaim policy for a component's pv is always "Retain", so ownerreferences needs to be set
     to garbage collect the pv.
     Reclaim policy for a flow's pv is determined by the flow's reclaim policy. Additionally,
     ownerreference needs to be set in case of "Retain" to garbage collect the pv.
     This function is idempotent because it overrides pv values based on current graph
+
+    args:
+        namespace (str): namespace of PVC's. Generally the namespace of a component
+        pvc_names (list): list of PVC's for which we want to patch their PVs
+        core_api: kubernetes.client.CoreV1Api instance to use
+        owner_reference (result from k8s_templates.owner_reference.owner_reference_template):
+            owner_reference to attach to the PV's. Used to make the PV's die when their PVC's
+            are deleted.
+        pvc_to_flow (dict): map of pvc_name to flow to give the persistent volume
+                            the proper reclaim policy (e.g. not deleting the underlying data
+                            when "Retain" is set
     """
     namespace = KubernetesName(namespace)
     async with kubernetes.watch.Watch() as watch:
