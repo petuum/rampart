@@ -32,7 +32,7 @@ The validator exposes three endpoints:
 /validate: returns whether the graph yaml is valid
 /conversion: converts between different RampartGraph custom resource versions.
              Fields/features that are missing in older versions may get default values in the
-             newer versions. 
+             newer versions.
 """
 
 
