@@ -290,6 +290,8 @@ class RampartController(object):
                         APISIX_ROUTE_API, APISIX_ROUTE_VERSION, APISIX_ROUTE_KIND_PL,
                         label_selector=CONTROLLED_BY_RAMPART)).get("items", [])
                 except kubernetes.client.rest.ApiException as exc:
+                    # 404 is raised when ApisixRoute CRD is not installed on the cluster.
+                    # This can be handled by assigning [] to ar_list.
                     if exc.status == 404:
                         ar_list = []
                     else:
