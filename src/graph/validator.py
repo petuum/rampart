@@ -131,7 +131,7 @@ class Validator(object):
         Currently there are two versions `v1beta1` and `v1beta2`. The only difference between
         the two is that `v1beta2` adds a field `spec.deploy`: boolean, which specifies if
         we want the graph to actually be deployed. Setting it to false will undeploy everything,
-        but leave the CRD.
+        but leave the CR.
 
         Converting to `v1beta2` from `v1beta1` will just add `spec.deploy: True`
         `v1beta1` cannot fully represent `v1beta2` graphs.

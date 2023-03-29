@@ -52,8 +52,8 @@ class RampartController(object):
 
     async def run(self):
         """
-        Spawn non-terminating tasks to watch changes to RampartGraph CRD objects and update
-        cluster state to match the specifications of the CRD's.
+        Spawn non-terminating tasks to watch changes to RampartGraph CR objects and update
+        cluster state to match the specifications of the CR's.
 
         Also launch a garbage-collection task.
         """
@@ -66,13 +66,13 @@ class RampartController(object):
 
     async def _patch_graph_status(self, namespace, name, patch_obj):
         """
-        Patch the RampartGraph CRD with the new values in patch_obj.
+        Patch the RampartGraph CR with the new values in patch_obj.
         Retries on failure up to a limit.
 
         Args:
-            namespace (str): namespace of the CRD
-            name (str): name of the CRD
-            patch_obj (dict): changes to make to the CRD
+            namespace (str): namespace of the CR
+            name (str): name of the CR
+            patch_obj (dict): changes to make to the CR
         """
         remaining = PATCH_RETRY_TIMEOUT
         while remaining >= 0.0:
@@ -88,9 +88,9 @@ class RampartController(object):
 
     async def _watch_graphs(self):
         """
-        A non-terminating function that watches changes to RampartGraph CRD's across
-        the entire cluster and appends the CRD metadata and a deployment task to make the
-        appropriate changes for the CRD to a queue.
+        A non-terminating function that watches changes to RampartGraph CR's across
+        the entire cluster and appends the CR metadata and a deployment task to make the
+        appropriate changes for the CR to a queue.
         """
         async with kubernetes.watch.Watch() as watch:
             while True:
@@ -133,8 +133,8 @@ class RampartController(object):
         This function wraps the tasks that do the actual work of updating the cluster
         to manage waiting for completion and cancellation.
 
-        args:
-            metadata (objects.base_type.Metadata): metadata of the RampartGraph CRD
+        Args:
+            metadata (objects.base_type.Metadata): metadata of the RampartGraph CR
         """
 
         # Ensure that only one task can update the state of deployment_locks at a time
@@ -145,8 +145,8 @@ class RampartController(object):
 
         logger = GraphLogger(LOG, {"metadata": metadata})
 
-        # Fetch the RampartGraph CRD object again to make sure we are using the most recent
-        # version. Changes to the CRD could have occured between when this function was
+        # Fetch the RampartGraph CR object again to make sure we are using the most recent
+        # version. Changes to the CR could have occured between when this function was
         # enqueued and now.
         graph_obj = await self._get_graph(metadata)
 
@@ -162,7 +162,7 @@ class RampartController(object):
             cur_generation = graph_obj["metadata"]["generation"]
 
         # The following block of code manages interrupting existing deployment tasks.
-        # For example, if the current deployment is stuck, updating/deleting the CRD
+        # For example, if the current deployment is stuck, updating/deleting the CR
         # should not be stuck waiting behind the current deployment, and instead should cancel
         # the existing deployment task.
         wait_for_cancellation = False
@@ -208,7 +208,7 @@ class RampartController(object):
                     await task
                 except asyncio.CancelledError:
                     pass
-            # Here we create the deployement task for the CRD,
+            # Here we create the deployement task for the CR,
             # store it for later (in case we need to cancel it, etc),
             # and then launch the task
             task = asyncio.create_task(self._sync_graph_task(metadata, logger))
@@ -224,10 +224,10 @@ class RampartController(object):
     async def _sync_graph_task(self, metadata, logger):
         """
         This function does the actual work of updating the cluster to reflect the state
-        desired by the RampartGraph CRD.
+        desired by the RampartGraph CR.
 
-        args:
-            metadata (objects.base_type.Metadata): metadata of the RampartGraph CRD
+        Args:
+            metadata (objects.base_type.Metadata): metadata of the RampartGraph CR
             logger (utils.logger.GraphLogger): logger that contains graph-specific formatting
         """
         # Need to get an up-to-date version of the graph in case
@@ -240,9 +240,9 @@ class RampartController(object):
         # deleted is marked for deletion
         if "deletionTimestamp" in graph_obj["metadata"]:
             logger.info("graph marked for deletion", extra={"phase": GraphPhase.TEARDOWN})
-            # iff the finalizer exists in the CRD, then we haven't completed teardown
+            # iff the finalizer exists in the CR, then we haven't completed teardown
             if FINALIZER in graph_obj["metadata"]["finalizers"]:
-                # Perform teardown and then patch the CRD to remove the finalizer
+                # Perform teardown and then patch the CR to remove the finalizer
 
                 # TODO: get component objects without needing to re-pull annotations from helm
                 #       and validate
@@ -271,7 +271,7 @@ class RampartController(object):
             return None
         # `status.observedGeneration` is the latest value of `metadata.generation` that we
         # have finished deployment. If `status.observedGeneration` is the same as
-        # `metadata.generation` then the current CRD has been deployed and we do not need to
+        # `metadata.generation` then the current CR has been deployed and we do not need to
         # do anything. Note that "finished" in this context can also mean a deployment failure.
         if ("status" in graph_obj and "observedGeneration" in graph_obj["status"] and
                 graph_obj["status"]["observedGeneration"] ==
@@ -323,7 +323,7 @@ class RampartController(object):
                 # Also note that this requirement is generally met by the same functionality
                 # required by `graph.deploy()` to handle redeployment with an updated graph object.
                 try:
-                    # By adding a custom finalizer, deletion of the RampartGraph CRD
+                    # By adding a custom finalizer, deletion of the RampartGraph CR
                     # from here on out will require this controller to manually handle cleanup
                     patch = {"metadata": {"finalizers": [FINALIZER]}}
                     logger.info("adding finalizer", extra={"phase": GraphPhase.VALIDATION})
@@ -368,7 +368,7 @@ class RampartController(object):
                     graph_obj["status"]["phase"] = "Undeployed"
 
                 # Deployment/Undeployment is functionally complete at this point.
-                # From here until the end is just updating the RampartGraph CRD to reflect that
+                # From here until the end is just updating the RampartGraph CR to reflect that
 
                 # We need to add all of the ingress and apisix information to the graph status
                 # so that they are easily available to users.
@@ -405,7 +405,7 @@ class RampartController(object):
                 graph_obj["status"]["componentNamespaces"] = graph.namespaces
 
                 # This last `observedGeneration` value lets the controller know that it doesn't
-                # need to redeploy this version of the RampartGraph CRD
+                # need to redeploy this version of the RampartGraph CR
                 graph_obj["status"]["observedGeneration"] = graph_obj["metadata"]["generation"]
             except DeploymentError as e:
                 logger.error(e, exc_info=True, extra={"phase": GraphPhase.DEPLOYMENT})
@@ -432,7 +432,7 @@ class RampartController(object):
                         raise
 
     async def _get_graph(self, metadata):
-        """Return the RampartGraph CRD object for the given metadata."""
+        """Return the RampartGraph CR object for the given metadata."""
         try:
             graph = await self._objs_api.get_namespaced_custom_object(
                 "rampart.petuum.com", RAMPART_CRD_VERSION, metadata.namespace.kubernetes_view,

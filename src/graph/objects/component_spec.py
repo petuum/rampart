@@ -53,7 +53,7 @@ class ComponentSpec(BaseElement):
         """
         Internal function to generalize handling inputs and outputs
 
-        args:
+        Args:
             io_specs: specifications about what the edges should be
             io_part (edge.IOPart): whether this is for inputs or outputs
         """

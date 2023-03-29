@@ -48,7 +48,7 @@ class ComponentRepo:
     """
     def __init__(self, name, url, pull_args):
         """
-        args:
+        Args:
             name (str): name to use the for the repo
             url (str): URL that the helm repo is hosted at
             pull_args (utils.classes.SubprocessArgs): Arguments used to access the repo.
@@ -93,7 +93,7 @@ class ComponentRepo:
         """
         Adds/Updates the repo specified by this class.
 
-        args:
+        Args:
             metadata (objects.base_types.Metadata): used for logging to tell which graph
                                                     requested the update.
         """
@@ -126,7 +126,7 @@ class ComponentRepo:
         Retrieves the rampart-specific metadata for a helm chart in the repo. This call can
         take some time.
 
-        args:
+        Args:
             comp_name (str): name of the helm chart for the component
             comp_version (str): name of the version for the component. Can be `"latest"`
                                 to get the most recent version in the repository
@@ -256,7 +256,7 @@ class RepoManager:
         Adds the argument repo to the set of repos managed, if the repo hasn't been added before.
         In either case, return the appropriate ComponentRepo instance.
 
-        args:
+        Args:
             repo_name (str): name to use for the repo
             url (str): URL that the helm repo is hosted at
             pull_args (utils.classes.SubprocessArgs): Arguments used to access the repo.

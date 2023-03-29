@@ -82,7 +82,7 @@ def collect_errors(results, error_cls=None):
       normal exceptions
     * if no exceptions are in `results`, `results` are returned instead
 
-    args:
+    Args:
         results (list): list of errors and values to combine
         error_cls (BaseError subclass | None): BaseError class to use by default. Defaults to
                                                DeploymentError

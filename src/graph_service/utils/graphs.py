@@ -183,7 +183,7 @@ async def sync_graph(name, namespace):
         if exc.status != 404:
             LOG.error(exc, exc_info=True)
         elif len(graph_versions) > 0:
-            # Do not delete/modify records from DB until the CRD is deleted from the K8s
+            # Do not delete/modify records from DB until the CR is deleted from the K8s
             app_query = Query()
             metadata_list = app_db.search((app_query.namespace == namespace) &
                                           (app_query.name == name))

@@ -120,7 +120,7 @@ class ComponentInstance(BaseElement):
         Throws a `ValidationError` if the component is invalid. This call must be made
         before any function with the `@required_validated` decorator is called.
 
-        args:
+        Args:
             validate_specs (Bool):
                 True -> Pull the helm chart for this component and validate with all the
                         Rampart component specification there. This may be expensive,

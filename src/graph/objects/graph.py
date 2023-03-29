@@ -112,7 +112,7 @@ class Graph(BaseElement):
         Class function to turn a json object into a a set of components, component charts,
         flows, and a boolean for whether the graph is to be deployed
 
-        args:
+        Args:
             json_obj: dictionary for the kubernetes values for the graph
             metadata (basetype.Metadata): namespace, name, uid for the graph
             validate_specs (bool): whether to pull from the remote helm repos. set to false
@@ -229,9 +229,9 @@ class Graph(BaseElement):
     async def from_json(cls, graph_json, metadata, validate_specs=True, workdir: str = ""):
         """
         Return a Graph object from the specified json (generally the json found
-        in a RampartGraph CRD).
+        in a RampartGraph CR).
 
-        args:
+        Args:
             graph_json: dictionary object representing all the specifications of the graph
             metadata (basetype.Metadata): namespace, name, uid for the graph
             validate_specs (bool): whether to pull from the remote helm repos. set to false
@@ -283,7 +283,7 @@ class Graph(BaseElement):
         Throws a `ValidationError` if the graph is invalid. This call must be made
         before any function with the `@required_validated` decorator is called.
 
-        args:
+        Args:
             validate_specs (Bool):
                 True -> Pull the helm charts for this graph and validate with all the
                         Rampart component specification there. This may be expensive,

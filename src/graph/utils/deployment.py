@@ -98,7 +98,7 @@ async def subprocess_with_return_code(graph_metadata, return_codes, interrupt_on
     """
     Creates a subprocess with `*args, **kwargs`.
 
-    args:
+    Args:
         graph_metadata (base_types.Metadata): Metadata of the graph this is called for.
                                               Used for logging.
         return_codes (List | Set | Dict): Some set of allowable return codes.
@@ -162,7 +162,7 @@ async def required_subprocess(graph_metadata, interrupt_on_cancel,
     """
     Creates a subprocess with `*args, **kwargs`, requiring it to succeed.
 
-    args:
+    Args:
         graph_metadata (base_types.Metadata): Metadata of the graph this is called for.
                                               Used for logging.
         interrupt_on_cancel (bool): Interrupt the subprocess if the parent task is canceled.
@@ -188,7 +188,7 @@ async def optional_subprocess(graph_metadata, interrupt_on_cancel,
     """
     Creates a subprocess with `*args, **kwargs`, allowing it to fail.
     
-    args:
+    Args:
         graph_metadata (base_types.Metadata): Metadata of the graph this is called for.
                                               Used for logging.
         interrupt_on_cancel (bool): Interrupt the subprocess if the parent task is canceled.
@@ -221,7 +221,7 @@ async def deploy_sub_namespace(name, parent_name, owner_reference,
     Deploys a subnamespace.
     See https://kubernetes.io/blog/2020/08/14/introducing-hierarchical-namespaces/
 
-    args:
+    Args:
         name (str): Name of the namespace to deploy
         parent_name (str): Name of the namespace to make this a subnamespace of
         owner_reference (result from k8s_templates.owner_reference.owner_reference_template):
@@ -347,7 +347,7 @@ async def patch_pv(namespace, pvc_names, core_api, owner_reference, pvc_to_flow=
     ownerreference needs to be set in case of "Retain" to garbage collect the pv.
     This function is idempotent because it overrides pv values based on current graph
 
-    args:
+    Args:
         namespace (str): namespace of PVC's. Generally the namespace of a component
         pvc_names (list): list of PVC's for which we want to patch their PVs
         core_api: kubernetes.client.CoreV1Api instance to use

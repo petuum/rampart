@@ -26,7 +26,7 @@ async def apply_infra_object(metadata, provided, status_phase):
     Creates or updates a unique kubernetes custom resource object to indicate what
     infrastructure is provided by the graph
 
-    args:
+    Args:
         metadata (base_types.Metadata): metadata for the graph
         provided (list): list of strings denoting what the graph provides
         status_phase ("registered" | "deployed"):

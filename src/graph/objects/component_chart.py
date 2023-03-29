@@ -179,7 +179,7 @@ class ComponentChart(BaseElement):
 
 class URLComponentChart(ComponentChart):
     """
-    A component chart whos repo is specified by the RampartGraph CRD as a URL
+    A component chart whos repo is specified by the RampartGraph CR as a URL
     """
     # TODO: add tests
     def __init__(self, chart_name, chart_version, url,
@@ -219,7 +219,7 @@ class URLComponentChart(ComponentChart):
 
 class SecretComponentChart(ComponentChart):
     """
-    A component chart whos repo is specified by the RampartGraph CRD as a kubernetes secret.
+    A component chart whos repo is specified by the RampartGraph CR as a kubernetes secret.
     """
     # TODO: add tests
     def __init__(self, chart_name, chart_version, repo_name, graph_metadata):
