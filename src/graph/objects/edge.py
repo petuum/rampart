@@ -137,8 +137,11 @@ class VariadicEdgeSpec(BaseEdgeSpec):
 
     async def validate(self):
         """
-        Throws a `ValidationError` if the object is invalid. This call must be made
+        Raises a `ValidationError` if the object is invalid. This call must be made
         before any function with the `@required_validated` decorator is called.
+
+        Raises:
+            ValidationError: If the mount path does not end with '*'
         """
         # TODO: remove type check here
         if (self.type is EdgeType.VOLUME) or (self.type is EdgeType.REPOSITORY):
@@ -219,8 +222,11 @@ class BaseFlow(Flow, ABC):
 
     async def validate(self):
         """
-        Throws a `ValidationError` if the object is invalid. This call must be made
+        Raises a `ValidationError` if the object is invalid. This call must be made
         before any function with the `@required_validated` decorator is called.
+
+        Raises:
+            ValidationError: If the flow has invalid characters in the name
         """
         if FLOW_NAME_RE.fullmatch(self._name.original_view):
             self._validated = True
@@ -433,10 +439,11 @@ class PulsarFlow(BaseFlow, flow_type=FlowType.PULSAR):
 
     async def validate(self):
         """
-        Throws a `ValidationError` if the object is invalid. This call must be made
+        Raises a `ValidationError` if the object is invalid. This call must be made
         before any function with the `@required_validated` decorator is called.
 
-        Validation here is just checking for whether we can connect to pulsar.
+        Raises:
+            ValidationError: If no deployed graph provides pulsar
         """
         if not pulsar_enabled():
             raise ValidationError({"Pulsar service inaccessible. "
@@ -528,8 +535,11 @@ class RepositoryFlow(PVFlow, flow_type=FlowType.REPOSITORY):
 
     async def validate(self):
         """
-        Throws a `ValidationError` if the object is invalid. This call must be made
+        Raises a `ValidationError` if the object is invalid. This call must be made
         before any function with the `@required_validated` decorator is called.
+
+        Raises:
+            ValidationError: If the flow is invalid
         """
         errors = []
         try:
@@ -794,8 +804,11 @@ class BaseEdge(Edge, ABC):
 
     async def validate(self, spec: BaseEdgeSpec):
         """
-        Throws a `ValidationError` if the object is invalid. This call must be made
+        Raises a `ValidationError` if the object is invalid. This call must be made
         before any function with the `@required_validated` decorator is called.
+
+        Raises:
+            ValidationError: If the edge is invalid
         """
         # By default, check whether config type is same as spec type.
         errors = []

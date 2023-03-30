@@ -1,5 +1,13 @@
 # Copyright 2023 Petuum, Inc. All Rights Reserved.
 
+"""
+Provides functionality for adding, modifying, and deleting Grafana dashboards for Rampart
+graphs.
+
+As the graphs are created and updated, we need to automatically create and update Grafana
+dashboards such that they cover all of the component namespaces of the graph.
+"""
+
 import asyncio
 import copy
 import httpx

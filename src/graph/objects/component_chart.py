@@ -79,9 +79,12 @@ class ComponentChart(BaseElement):
 
     async def validate(self):
         """
-        Throws a `ValidationError` if this componentchart or any of its children are
+        Raises a `ValidationError` if this ComponentChart or any of its children are
         invalid. This call must be made before any function with the `@required_validated` decorator
         is called.
+
+        Raises:
+            ValidationError: If the ComponentChart is invalid
         """
         #  TODO: enable in validator pod
         if not self._url:

@@ -51,7 +51,7 @@ class ComponentSpec(BaseElement):
 
     def _update_io_specs(self, io_specs, io_part: IOPart):
         """
-        Internal function to generalize handling inputs and outputs
+        Internal function to have the same code handle both inputs and outputs
 
         Args:
             io_specs: specifications about what the edges should be
@@ -96,9 +96,12 @@ class ComponentSpec(BaseElement):
 
     async def validate(self):
         """
-        Throws a `ValidationError` if this component specification or any of its children are
+        Raises a `ValidationError` if this component specification or any of its children are
         invalid. This call must be made before any function with the `@required_validated` decorator
         is called.
+
+        Raises:
+            ValidationError: The component specification is invalid
         """
         if self._validated:
             return

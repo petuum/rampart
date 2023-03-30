@@ -1,5 +1,13 @@
 # Copyright 2023 Petuum, Inc. All Rights Reserved.
 
+"""
+Provides a service to determine the health of a volume flow for a component.
+
+Determining whether a volume flow is working is more than just determining that the appropriate
+volume claim is mounted. We must also test that we can reach all of the other components that
+this one should be connected to.
+"""
+
 import glob
 import os
 import yaml

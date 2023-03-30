@@ -1,5 +1,17 @@
 # Copyright 2023 Petuum, Inc. All Rights Reserved.
 
+"""
+Provides endpoints for the Rampart UI (https://github.com/petuum/rampart-ui-chart) to query
+to get information about and make updates to graphs.
+
+The Rampart UI has a concept of "Apps", which contain multiple versions of RampartGraphs,
+with the ability to revert to previous versions.
+
+Because Kubernetes does not really provide a way to store old versions of objects,
+this module stores the previous versions in a database. Reverting to an old version then
+modifies the kubernetes custom resource object to match the version in this databae.
+"""
+
 import asyncio
 import json
 import os

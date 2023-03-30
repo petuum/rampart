@@ -1,5 +1,13 @@
 # Copyright 2023 Petuum, Inc. All Rights Reserved.
 
+"""
+Provides endpoints for an individual flow that the graph_service.run_app module can
+query. Generally these endpoints involve retreiving the actual data from volume
+and repo flows, which involves mounting PVC's for the flows. For this reason it is
+not feasible to have this functionality performed by the main graph_service module,
+as that is only deployed once on the cluster.
+"""
+
 import asyncio
 import os
 import tempfile

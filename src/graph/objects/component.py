@@ -117,7 +117,7 @@ class ComponentInstance(BaseElement):
 
     async def validate(self, validate_specs=True):
         """
-        Throws a `ValidationError` if the component is invalid. This call must be made
+        Raises a `ValidationError` if the component is invalid. This call must be made
         before any function with the `@required_validated` decorator is called.
 
         Args:
@@ -127,6 +127,9 @@ class ComponentInstance(BaseElement):
                         so only use this flag when time is not of the essence. For example,
                         validating webhooks have a non-bypassable timeout limit
                 False -> Do not pull the helm chart
+
+        Raises:
+            ValidationError: If the component is invalid
         """
         if validate_specs:
             await self._chart.validate()
@@ -141,7 +144,11 @@ class ComponentInstance(BaseElement):
 
         async def _validate_edges(target: dict, target_spec: dict):
             """
-            Function to generalize the code for both input and output edges
+            Validates a dictionary of edges
+
+            Args:
+                target (dict): dictionary mapping edge names to edge configurations
+                target_spec (dict): dictionary mapping edge names to objects.BaseEdgeSpecs
             """
             for name, edge in target.items():
                 io_type = edge.type

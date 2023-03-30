@@ -29,8 +29,11 @@ class Secret(BaseElement):
 
     async def validate(self):
         """
-        Throws a `ValidationError` if the component is invalid. This call must be made
+        Raises a `ValidationError` if the secret is invalid. This call must be made
         before any function with the `@required_validated` decorator is called.
+
+        Raises:
+            ValidationError: If the secret is invalid
         """
         if isinstance(self.name, KubernetesName):
             name = self.name.kubernetes_view

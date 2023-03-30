@@ -280,7 +280,7 @@ class Graph(BaseElement):
 
     async def validate(self, validate_specs):
         """
-        Throws a `ValidationError` if the graph is invalid. This call must be made
+        Raises a `ValidationError` if the graph is invalid. This call must be made
         before any function with the `@required_validated` decorator is called.
 
         Args:
@@ -290,6 +290,9 @@ class Graph(BaseElement):
                         so only use this flag when time is not of the essence. For example,
                         validating webhooks have a non-bypassable timeout limit
                 False -> Do not pull the helm charts
+
+        Raises:
+            ValidationError: If the graph is invalid
         """
         errors = []
 
