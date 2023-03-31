@@ -1,5 +1,5 @@
 # Rampart
-Rampart is an open system for MLOps that allows easy provisioning of custom infrastructure from templates. It is designed with the principles of composability, automation, and scalability, for developers to enable simple infrastructure management, modular pipeline development, seamless deployment, and experiment management.
+Rampart is an open system built on top of Kubernetes for MLOps that allows easy provisioning of custom infrastructure from templates. It is designed with the principles of composability, automation, and scalability, for developers to enable simple infrastructure management, modular pipeline development, seamless deployment, and experiment management.
 
 Developers can use the drag-and-drop GUI to spin up infrastructure from a template and get started on a new project in minutes, without any help from a system admin. As an extensible system for interoperability, Rampart can be used to deploy any software (i.e., OSS, third-party software, or any custom code) in addition to a library of native Rampart components as parts of custom infrastructure.
 
