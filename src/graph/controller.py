@@ -376,10 +376,17 @@ class RampartController(object):
                 # TODO: Move "endpointPaths" related stuff to another file
                 ing_list = (await self._network_api.list_ingress_for_all_namespaces(
                     label_selector=CONTROLLED_BY_RAMPART)).items
-                ar_list = (await self._objs_api.list_cluster_custom_object(
-                    APISIX_ROUTE_API, APISIX_ROUTE_VERSION, APISIX_ROUTE_KIND_PL,
-                    label_selector=CONTROLLED_BY_RAMPART)).get("items", [])
-
+                try:
+                    ar_list = (await self._objs_api.list_cluster_custom_object(
+                        APISIX_ROUTE_API, APISIX_ROUTE_VERSION, APISIX_ROUTE_KIND_PL,
+                        label_selector=CONTROLLED_BY_RAMPART)).get("items", [])
+                except kubernetes.client.rest.ApiException as exc:
+                    # 404 is raised when ApisixRoute CRD is not installed on the cluster.
+                    # This can be handled by assigning [] to ar_list.
+                    if exc.status == 404:
+                        ar_list = []
+                    else:
+                        raise exc
                 ns_to_comp = graph.namespace_to_component_map
                 comp_to_paths = {}
                 for ing in ing_list:
