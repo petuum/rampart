@@ -22,6 +22,18 @@ LOG.setLevel(logging.INFO)
 
 
 async def apply_infra_object(metadata, provided, status_phase):
+    """
+    Creates or updates a unique kubernetes custom resource object to indicate what
+    infrastructure is provided by the graph
+
+    Args:
+        metadata (base_types.Metadata): metadata for the graph
+        provided (list): list of strings denoting what the graph provides
+        status_phase ("registered" | "deployed"):
+            "registered" indicates that we know that the graph provides `provided` to
+            prevent the same infrastructure from multiple graphs from colliding.
+            "deployed" indicates that the infrastructure is ready
+    """
     logger = GraphLogger(LOG, {"metadata": metadata})
     k8s_key = RAMPART_INFRA_K8S_KEY_GEN(metadata.namespace.kubernetes_view)
 
@@ -59,6 +71,7 @@ async def apply_infra_object(metadata, provided, status_phase):
 
 # TODO: merge with apply_infra_object
 async def patch_ownerreference(metadata, owner_reference):
+    """adds ownerreference to the k8s object from `apply_infra_object"""
     k8s_key = RAMPART_INFRA_K8S_KEY_GEN(metadata.namespace.kubernetes_view)
     infra_obj = {"metadata": {"ownerReferences": owner_reference}}
 
@@ -68,4 +81,5 @@ async def patch_ownerreference(metadata, owner_reference):
 
 
 def pulsar_enabled():
+    """return true iff there is a graph that provides pulsar"""
     return "pulsar" in get_global_repo_manager().provided

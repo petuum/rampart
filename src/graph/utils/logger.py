@@ -6,6 +6,7 @@ from .classes import GraphPhase
 
 
 class GraphLogger(logging.LoggerAdapter):
+    """provides logging with Rampart specific information (graph metadata, phase, etc)"""
     def process(self, msg, kwargs):
         if self.extra["metadata"]:
             metadata = self.extra["metadata"]

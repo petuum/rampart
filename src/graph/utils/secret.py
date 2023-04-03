@@ -9,6 +9,11 @@ core_api = k8s_client.CoreV1Api()
 
 
 async def create_secret_by_filepath(secret_name, namespace, filepath):
+    """
+    Creates a kubernetes secret from a file on the same container as the
+    rampart controller. Used to create imagepullsecrets to pull
+    Rampart images for the components.
+    """
     try:
         with open(filepath, "rb") as f:
             dockerconfigjson = str(base64.b64encode(f.read()), "utf-8")
