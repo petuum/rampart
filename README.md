@@ -67,10 +67,7 @@ Contributions are welcome! If you would like to contribute to Rampart OSS, pleas
 
 # Open Source Progress
 
-Open sourced repos:
-- rampart controller
-
-Coming soon:
-- rampart helm
-- Rampart GUI
-- Rampart components
+- [x] Rampart controller (this repo)
+- [] Rampart helm chart
+- [] Rampart GUI
+- [] Rampart components
