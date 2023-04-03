@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Rampart Controller serves as the [Kubernetes Controller](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) for the RampartGraph custom resource. It contains three seperate components with the following rolls:
+The Rampart Controller serves as the controller for the [Kubernetes Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) for the RampartGraph custom resource. It contains three seperate components with the following rolls:
 
 * **Validator**: A [Kubernetes Validating Admission Webhook](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/) that performs initial static validation on RampartGraph objects. Because Kubernetes has a strict timeout policy on requests to admission webhooks, and because this webhook must return before the Kubernetes response to create the graph is returned, the validator does not perform time-consuming checks. In particular, validation that requires the component helm charts (which requires the validator to download the chart) is skipped. Note that a graph that is rejected by the validator will not be actually created by Kubernetes: instead, the creation request will fail.
 * **Mutation Webhook**: A [Kubernetes Mutating Admission Webhook](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/) that modifies all requests to create pods in the namespaces of Rampart graph components. As part of graph deployment, each component namespace will have a PodPreset object that defines what changes should be made to the pod to attach edges and flows. This mutation webhook then applies the pod and container specifications defined by the preset to all pods in the component. Please note that this code lives in `src/mutating_webhook` instead of `src/graph`.
@@ -32,7 +32,7 @@ Once validation is completed, the controller can begin deployment of components 
 1. Deploy all of the subnamespaces that will contain the components (note: each component gets its own namespace)
 2. Deploy all of the flows. Note that the actual body of volume flows do not exist per se, but are rather when two components using it write and read to the same place on a distributed filesystem
    a. Create Pulsar tenants, namespaces, and topics to house Pulsar flows
-   b. Create all the auxiliary volume claimsm, deployments, and services to monitor volume flows
+   b. Create all the auxiliary volume claims, deployments, and services to monitor volume flows
    c. Initialize the repository structure within the repository flows
 3. Deploy all of the components
    a. Using the repositories pulled during validation, create a [helmfile](https://helmfile.readthedocs.io/en/latest/) configuration file to package all of the components, edges, and `config` fields together.
