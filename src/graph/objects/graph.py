@@ -325,9 +325,6 @@ class Graph(BaseElement):
         # Due to the frontend limitations
         for flow in self._flows.values():
             name = flow.name
-            if "aabbccdd" in name.kubernetes_view:
-                errors.append(
-                    f"Flow name {name.original_view} overlaps with aabbccdd")
             if name.kubernetes_view in component_flow_names:
                 errors.append(
                     f"Flow name {name.original_view} overlaps with component or flow name "
