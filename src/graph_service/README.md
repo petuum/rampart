@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Rampart Backend Service provides a backend for the Rampart UI to interact with Kubernetes. The Rampart UI has the concept of `App`s, which are Rampart graphs with version history (including with the ability to revert, etc). Unfortunately, this abstraction does not match the abstraction maintained by `RampartGraph` custom resources, which do not maintain any sort of versioning. Therefore, the Rampart Backend Service needs to store the mapping between `App`s and `RampartGraph` custom resources.
+The Rampart Backend Service provides a backend with which the Rampart UI can deploy and manage the Rampart graphs deployed on a Kubernetes. The Rampart UI has the concept of `App`s, which are Rampart graphs with version history (including with the ability to revert, etc). Unfortunately, this abstraction does not match the abstraction maintained by `RampartGraph` custom resources, which do not maintain any sort of versioning. Therefore, the Rampart Backend Service needs to store the mapping between `App`s and `RampartGraph` custom resources.
 
 The actual implementation is a [FastApi](https://fastapi.tiangolo.com) server rooted at `graph_service.run_app` using [TinyDB](https://tinydb.readthedocs.io/en/latest/) to store all of `App` and `RampartGraph` versioning state.
 
