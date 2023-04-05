@@ -76,4 +76,4 @@ Coming soon:
 - Rampart components
 
 # Implemnetation
-See the documentation for the [Rampart Controller](src/graph/README.md) and [Rampart Backend Service](src/graph_service/README.md) for details.
+See the documentation for the [Rampart Controller](src/graph/README.md) and [Rampart Backend Service](src/graph_service/README.md) within this repository for details.
