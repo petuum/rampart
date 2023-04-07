@@ -61,6 +61,9 @@ class IOPart(enum.Enum):
 
 
 class BaseEdgeSpec(ABC):
+    """
+    Base class for edge specifications
+    """
     def __init__(self, name: str, edge_type: EdgeType, part: IOPart,
                  remaining_specs: Optional[dict] = None):
         self._name = name
@@ -102,6 +105,11 @@ class BaseEdgeSpec(ABC):
 
 
 class SimpleEdgeSpec(BaseEdgeSpec):
+    """
+    Specification for an edge with a fixed name. If the component spec has a simple input edge
+    with name "foo" and type "bar", the input edge "foo" for a component instance with that
+    component spec must have type "bar"
+    """
     def __init__(self, edge_type: EdgeType, name: str, part: IOPart, remaining_specs: dict = None):
         super().__init__(name, edge_type, part, remaining_specs)
 
@@ -110,6 +118,11 @@ class SimpleEdgeSpec(BaseEdgeSpec):
 
 
 class VariadicEdgeSpec(BaseEdgeSpec):
+    """
+    Specification for an edge using a prefix. If the component spec has a variadic input edge
+    "foo*" with type "bar", any input edge that starts with "foo" for a component instance
+    with that component spec must have type "bar".
+    """
     def __init__(self, edge_type: EdgeType, prefix: str, part: IOPart,
                  remaining_specs: dict = None):
         super().__init__(prefix + "*", edge_type, part, remaining_specs)
@@ -123,6 +136,13 @@ class VariadicEdgeSpec(BaseEdgeSpec):
         return name.startswith(self._prefix)
 
     async def validate(self):
+        """
+        Raises a `ValidationError` if the object is invalid. This call must be made
+        before any function with the `@required_validated` decorator is called.
+
+        Raises:
+            ValidationError: If the mount path does not end with '*'
+        """
         # TODO: remove type check here
         if (self.type is EdgeType.VOLUME) or (self.type is EdgeType.REPOSITORY):
             mount_path = self.type_specific_specs.get("mountPath", None)
@@ -155,6 +175,9 @@ class Flow:
 
 
 class BaseFlow(Flow, ABC):
+    """
+    Base class for flows
+    """
     def __init__(self, name: Union[str, KubernetesName], config: dict, flow_type: FlowType,
                  uid: str, graph_metadata: Metadata):
         self._name = KubernetesName(name)
@@ -175,6 +198,10 @@ class BaseFlow(Flow, ABC):
     @staticmethod
     async def batch_deploy(flows: List["BaseFlow"], workdir: str,
                            graph_metadata: Metadata) -> List[asyncio.Task]:
+        """
+        To be implemented by the inheriting subclasses:
+        Deploy all the of the flows that match this flow subclass at once
+        """
         return []
 
     @property
@@ -194,6 +221,13 @@ class BaseFlow(Flow, ABC):
         return self._config
 
     async def validate(self):
+        """
+        Raises a `ValidationError` if the object is invalid. This call must be made
+        before any function with the `@required_validated` decorator is called.
+
+        Raises:
+            ValidationError: If the flow has invalid characters in the name
+        """
         if FLOW_NAME_RE.fullmatch(self._name.original_view):
             self._validated = True
         else:
@@ -206,6 +240,10 @@ class BaseFlow(Flow, ABC):
 
 
 class PVFlow(BaseFlow, flow_type=FlowType.VOLUME):
+    """
+    Represents and handles the persistent volumes and persistent volume claims
+    for connecting two components
+    """
 
     def __init__(self, name: str, config: dict, graph_metadata: Metadata):
         metadata = graph_metadata
@@ -282,6 +320,7 @@ class PVFlow(BaseFlow, flow_type=FlowType.VOLUME):
 
     @classmethod
     async def batch_teardown(cls, graph_metadata: Metadata):
+        """Performs a teardown of all volume flows for a given graph"""
         subnamespace = cls._generate_namespace(graph_metadata)
         parent_namespace = graph_metadata.namespace
         await optional_subprocess(
@@ -296,6 +335,10 @@ class PVFlow(BaseFlow, flow_type=FlowType.VOLUME):
     @classmethod
     async def batch_deploy(cls, flows: List["PVFlow"], workdir: str,
                            graph_metadata: Metadata, extra_values={}) -> List[asyncio.Task]:
+        """
+        Deploy all the of the volume flows for a given graph. Returns a list of tasks
+        that the caller will need to manage to finish deploying the flows.
+        """
         # Deployment of "flows" is used to manage pv reclaim policies in order
         # to clear up underlying pv paths according to flows' reclaim policies.
         # see `deployment_util.patch_pv` to learn how pv's are patched.
@@ -382,6 +425,9 @@ class PVFlow(BaseFlow, flow_type=FlowType.VOLUME):
 
 
 class PulsarFlow(BaseFlow, flow_type=FlowType.PULSAR):
+    """
+    Represents and handles the pulsar state for connecting two components
+    """
 
     def __init__(self, name: str, config: dict, graph_metadata: Metadata):
         pulsar_namespace = GENERATE_PULSAR_NAMESPACE(graph_metadata)
@@ -392,6 +438,13 @@ class PulsarFlow(BaseFlow, flow_type=FlowType.PULSAR):
         self._topic = f"{pulsar_namespace}/{name.original_view}"
 
     async def validate(self):
+        """
+        Raises a `ValidationError` if the object is invalid. This call must be made
+        before any function with the `@required_validated` decorator is called.
+
+        Raises:
+            ValidationError: If no deployed graph provides pulsar
+        """
         if not pulsar_enabled():
             raise ValidationError({"Pulsar service inaccessible. "
                                    "Ensure pulsar dependency is installed."})
@@ -404,6 +457,13 @@ class PulsarFlow(BaseFlow, flow_type=FlowType.PULSAR):
     @staticmethod
     async def batch_deploy(flows: List["PulsarFlow"], workdir: str,
                            graph_metadata: Metadata) -> List[asyncio.Task]:
+        """
+        Deploy all the of the pulsar flows for a given graph. Returns an empty list of tasks
+        to match the type of other versions of `batch_deploy`.
+
+        The actual implementation here is just creating the appropriate pulsar tenants
+        and namespaces that the components can use.
+        """
         if not pulsar_enabled():
             return []
         try:
@@ -436,6 +496,7 @@ class PulsarFlow(BaseFlow, flow_type=FlowType.PULSAR):
 
     @require_validated
     async def deploy(self):
+        """Deploy a pulsar topic for this flow"""
         # The callee must make this deployment not fail in case the topic
         # already exists
         async with aiohttp.ClientSession(timeout=HTTP_TIMEOUT) as session:
@@ -453,7 +514,10 @@ class PulsarFlow(BaseFlow, flow_type=FlowType.PULSAR):
 
 
 class RepositoryFlow(PVFlow, flow_type=FlowType.REPOSITORY):
-
+    """
+    Implements an extension of a PVFlow that also sets up a git or DVC (https://dvc.org) repo
+    for the mounted volumes
+    """
     class RepoKind(enum.Enum):
         GIT = enum.auto()
         DVC = enum.auto()
@@ -470,6 +534,13 @@ class RepositoryFlow(PVFlow, flow_type=FlowType.REPOSITORY):
         return self._repo_kind
 
     async def validate(self):
+        """
+        Raises a `ValidationError` if the object is invalid. This call must be made
+        before any function with the `@required_validated` decorator is called.
+
+        Raises:
+            ValidationError: If the flow is invalid
+        """
         errors = []
         try:
             await super().validate()
@@ -519,6 +590,7 @@ class RepositoryFlow(PVFlow, flow_type=FlowType.REPOSITORY):
 
     @require_validated
     async def init_flow_content(self, image_pull_secret_name=None):
+        """Instantiates all of the repository file structure"""
         # Cases based on the two kinds of repo flows supprted (git and dvc):
         # Case 1: init none
         init_git, init_artifact, init_dvc, link_storage = False, False, False, False
@@ -578,6 +650,7 @@ class RepositoryFlow(PVFlow, flow_type=FlowType.REPOSITORY):
 
     @classmethod
     async def batch_teardown(cls, graph_metadata: Metadata):
+        """Tears down all of the deployed infrastructure for the repository flows of a graph"""
         subnamespace = cls._generate_namespace(graph_metadata)
         parent_namespace = graph_metadata.namespace
         await optional_subprocess(
@@ -592,6 +665,10 @@ class RepositoryFlow(PVFlow, flow_type=FlowType.REPOSITORY):
     @classmethod
     async def batch_deploy(cls, flows: List["RepositoryFlow"], workdir: str,
                            graph_metadata: Metadata) -> List[asyncio.Task]:
+        """
+        Deploy all the of the repo flows for a given graph. Returns a list of tasks
+        that the caller will need to manage to finish deploying the flows.
+        """
         flows_need_pv = [flow for flow in flows if flow.need_pv()]
         flows_need_init = [flow for flow in flows if flow.flows_need_init()]
         if not flows_need_init and not flows_need_pv:
@@ -694,7 +771,8 @@ class Edge:
 
 
 class BaseEdge(Edge, ABC):
-    """Base class of all edge classes.
+    """
+    Base class of all edge classes.
     Important note: all edges with a mount path should have a `mount_path` attribute/property,
     whose value is the path string.
     """
@@ -725,6 +803,13 @@ class BaseEdge(Edge, ABC):
         return self._validated
 
     async def validate(self, spec: BaseEdgeSpec):
+        """
+        Raises a `ValidationError` if the object is invalid. This call must be made
+        before any function with the `@required_validated` decorator is called.
+
+        Raises:
+            ValidationError: If the edge is invalid
+        """
         # By default, check whether config type is same as spec type.
         errors = []
         if isinstance(spec, SimpleEdgeSpec):
@@ -771,6 +856,10 @@ class BaseEdge(Edge, ABC):
     @property
     @require_validated
     def resource(self):
+        """
+        The primary way the component will interact with the flow. Contains some
+        flow-type specific string that will allow the component to connect (e.g. mount path)
+        """
         return ""
 
     @property
@@ -783,6 +872,13 @@ class BaseEdge(Edge, ABC):
 
     @require_validated
     def create_pod_preset_values(self, seen_flows: set):
+        """
+        Creates a template for values that should be attached to all pods in a
+        component namespace.
+
+        Here we attach an environment variable so that the pod knows that this
+        edge exists and has some resource string (see the `resource` function).
+        """
         env_var = {"name": f"RAMPART_{self.part.name}_{self.name.rampart_view}",
                    "value": self.resource}
         return {
@@ -796,11 +892,14 @@ class BaseEdge(Edge, ABC):
 
     @require_validated
     def post_deploy_hooks(self, namespace: Metadata, seen_flows: set):
-        # Coroutines to be executed right after edge deployments
+        """Coroutines to be executed right after edge deployments"""
         return []
 
 
 class VolumeEdge(BaseEdge, edge_type=EdgeType.VOLUME):
+    """
+    This class represents and manages attaching a PV/volume flow to a component
+    """
     def __init__(self, name: str, part: IOPart, config: dict,
                  flow: Union[Either.Success, Either.Failure],
                  graph_metadata: Metadata, component_metadata: Metadata):
@@ -814,12 +913,14 @@ class VolumeEdge(BaseEdge, edge_type=EdgeType.VOLUME):
         else:
             self._mount_path = None
 
-    # This value is redundant with resource, because
-    # there are some times when we want to make clear that
-    # we are dealing with the mount path as a path per se,
-    # rather than a some string passed to the user
     @property
     def mount_path(self):
+        """
+        This value is redundant with resource, because
+        there are some times when we want to make clear that
+        we are dealing with the mount path as a path per se,
+        rather than a some string passed to the user
+        """
         return self._mount_path
 
     def _validate(self, spec: BaseEdgeSpec = None):
@@ -846,16 +947,30 @@ class VolumeEdge(BaseEdge, edge_type=EdgeType.VOLUME):
     @property
     @require_validated
     def resource(self):
+        """
+        The component can use the attached volume flow by using the directory with
+        the returned path.
+        """
         return self._mount_path
 
     @require_validated
     def create_k8s_object_yamls(self, namespace: Metadata, seen_flows: set):
+        """
+        Create configs so we can deploy the appropriate PVC's for this edge's namespace
+        """
         if self.flow not in seen_flows:
             return [self.flow.to_pvc(namespace.name, STORAGE_CLASS)]
         return []
 
     @require_validated
     def create_pod_preset_values(self, seen_flows: set):
+        """
+        Creates a template for values that should be attached to all pods in a
+        component namespace.
+
+        In addition to the default resource environment variable, we attach a PVC
+        and a volume mount.
+        """
         preset = super().create_pod_preset_values(seen_flows)
         mount = {
             "name": f"flow-volume-{self.flow_name.kubernetes_view}",
@@ -874,6 +989,10 @@ class VolumeEdge(BaseEdge, edge_type=EdgeType.VOLUME):
 
     @require_validated
     def post_deploy_hooks(self, namespace: Metadata, seen_flows: set):
+        """
+        After the PVC's are deployed, we need to patch the parent PV's so that they are destroyed
+        when the component is removed.
+        """
         if self.flow not in seen_flows:
             pvc = self.flow.to_pvc(namespace.name, STORAGE_CLASS)
             owner_reference = owner_reference_template(namespace.name, namespace.uid,
@@ -883,6 +1002,9 @@ class VolumeEdge(BaseEdge, edge_type=EdgeType.VOLUME):
 
 
 class PulsarEdge(BaseEdge, edge_type=EdgeType.PULSAR):
+    """
+    This class represents and manages attaching a pulsar flow to a component
+    """
     def __init__(self, name: str, part: IOPart, config: dict,
                  flow: Union[Either.Success, Either.Failure],
                  graph_metadata: Metadata, component_metadata: Metadata):
@@ -892,10 +1014,16 @@ class PulsarEdge(BaseEdge, edge_type=EdgeType.PULSAR):
     @property
     @require_validated
     def resource(self):
+        """
+        The component can use the pulsar flow by connecting to the returned pulsar topic.
+        """
         return f"pulsar://{PULSAR_CLIENT_SERVICE}/{self.flow.topic}"
 
 
 class RepositoryEdge(VolumeEdge, edge_type=EdgeType.REPOSITORY):
+    """
+    This class represents and manages attaching a repository flow to a component
+    """
     def __init__(self, name: str, part: IOPart, config: dict,
                  flow: Union[Either.Success, Either.Failure],
                  graph_metadata: Metadata, component_metadata: Metadata):
@@ -911,6 +1039,13 @@ class RepositoryEdge(VolumeEdge, edge_type=EdgeType.REPOSITORY):
 
     @require_validated
     def create_pod_preset_values(self, seen_flows: set):
+        """
+        Creates a template for values that should be attached to all pods in a
+        component namespace.
+
+        In addition to the default resource environment variable and volume
+        presets, we attach an init container that sets up the respository.
+        """
         if self.flow.need_pv():
             preset = super().create_pod_preset_values(seen_flows)
         else:
@@ -1031,6 +1166,10 @@ class RepositoryEdge(VolumeEdge, edge_type=EdgeType.REPOSITORY):
 
     @require_validated
     def create_k8s_object_yamls(self, namespace: Metadata, seen_flows: set):
+        """
+        Create configs so we can deploy the appropriate PVC's and pull secrets
+        for this edge's namespace.
+        """
         obj_list = []
         if self.flow.need_pv():
             obj_list.extend(super().create_k8s_object_yamls(namespace, seen_flows))
@@ -1048,6 +1187,9 @@ class RepositoryEdge(VolumeEdge, edge_type=EdgeType.REPOSITORY):
 
     @require_validated
     def post_deploy_hooks(self, namespace: Metadata, seen_flows: set):
+        """
+        Call the parent class's post_deploy_hooks if appropriate
+        """
         if self.flow.need_pv():
             return super().post_deploy_hooks(namespace, seen_flows)
         return []

@@ -31,6 +31,12 @@ class BaseError(Exception):
 
 
 class ValidationError(BaseError):
+    """
+    Class representing issues with the graph, equivalent to compilation failure
+
+    Forms a monad with a set of sub-errors, the set map function and set union
+    for join.
+    """
     def __init__(self, errors):
         super().__init__(errors)
 
@@ -43,6 +49,12 @@ class ValidationError(BaseError):
 
 
 class DeploymentError(BaseError):
+    """
+    Class representing a set of errors while deploying the graph
+
+    Forms a monad with a set of sub-errors, the set map function and set union
+    for join.
+    """
     def __init__(self, errors):
         super().__init__(errors)
 
@@ -55,6 +67,27 @@ class DeploymentError(BaseError):
 
 
 def collect_errors(results, error_cls=None):
+    """
+    Acts as the monadic join over both ValidationError and DeploymentError (seperately).
+    Use this to combine multiple Validation/DeploymentError into one.
+
+    `results` can include ValidationError/DeploymentError instances, normal exceptions,
+    and non-exception values.
+
+    Some notes:
+
+    * normal exceptions will get wrapped in the error_cls and merged together with the BaseErrors
+    * only one of ValidationError and DeploymentError can be present in `results`
+    * if neither ValidationError nor DeploymentError are present, error_cls is used to wrap
+      normal exceptions
+    * if no exceptions are in `results`, `results` are returned instead
+
+    Args:
+        results (list): list of errors and values to combine
+        error_cls (BaseError subclass | None): BaseError class to use by default. Defaults to
+                                               DeploymentError
+    """
+
     # This is the monadic unit
     errors = set()
     for result in results:
@@ -93,6 +126,12 @@ async def validate_dict(dictionary, *args, **kwargs):
 
 
 class Either:
+    """
+    Either monad:
+    Values of either can be a success with some value or failure with an error message
+    `bool(Success(x))` evaluates to `True` for all values `x`
+    `bool(Failure(x))` evaluates to `False` for all values `x`
+    """
     class Success:
         def __init__(self, value):
             self._value = value

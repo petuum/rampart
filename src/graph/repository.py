@@ -21,6 +21,10 @@ LOG.setLevel(logging.INFO)
 
 
 class _ComponentID:
+    """
+    Contains all the information about the helm chart needed for a given component,
+    as well as the built-in functions required to use it as the key in a dictionary
+    """
     def __init__(self, repo_url, chart_name, chart_version):
         self._repo_url = repo_url
         self._chart_name = chart_name
@@ -37,7 +41,19 @@ class _ComponentID:
 
 
 class ComponentRepo:
+    """
+    Contains the functionality for a single helm repository. Multiple components may
+    use a single instance of this class to fetch their chart from the repo specified
+    at the URL
+    """
     def __init__(self, name, url, pull_args):
+        """
+        Args:
+            name (str): name to use the for the repo
+            url (str): URL that the helm repo is hosted at
+            pull_args (utils.classes.SubprocessArgs): Arguments used to access the repo.
+                                                      Generally includes auth, etc.
+        """
         self._url = url.strip("/")
         self._name = name
         # Mutexes for operations on each chart versions
@@ -74,6 +90,13 @@ class ComponentRepo:
         return (name, pull_args_hash)
 
     async def update_repo(self, metadata=None):
+        """
+        Adds/Updates the repo specified by this class.
+
+        Args:
+            metadata (objects.base_types.Metadata): used for logging to tell which graph
+                                                    requested the update.
+        """
         #  TODO: add caching
         logger = GraphLogger(LOG, {"metadata": metadata})
         logger.info(f"adding repo {self.url}", extra={"phase": GraphPhase.VALIDATION})
@@ -99,6 +122,17 @@ class ComponentRepo:
                                    f"{stderr.decode()}"})
 
     async def get_component_annotations(self, comp_name, comp_version, metadata=None):
+        """
+        Retrieves the rampart-specific metadata for a helm chart in the repo. This call can
+        take some time.
+
+        Args:
+            comp_name (str): name of the helm chart for the component
+            comp_version (str): name of the version for the component. Can be `"latest"`
+                                to get the most recent version in the repository
+            metadata (objects.base_types.Metadata): used for logging to tell which graph
+                                                    requested the update.
+        """
         logger = GraphLogger(LOG, {"metadata": metadata})
         key = (comp_name, comp_version)
         async with self._lock:
@@ -150,6 +184,12 @@ class ComponentRepo:
 
 
 class RepoManager:
+    """
+    Manages the global set of ComponentRepo's. For example, the RepoManager will prevent duplicate
+    ComponentRepo's from existing and will perform reference-counting GC.
+
+    This class should only be actually instantiated once.
+    """
     _instance = None
 
     def __new__(cls):
@@ -188,6 +228,12 @@ class RepoManager:
         return copy.deepcopy(self._provided)
 
     async def update_provides(self):
+        """
+        Determine what infrastructure requirements the graphs across the entire cluster
+        have provided, and store the result in `self._provided`
+
+        Used for determining if graphs have all of their prerequisites met.
+        """
         namespaces_result = await self._namespace_api.list_namespace()
         namespaces = namespaces_result.items
         tasks = [self._custom_api.list_namespaced_custom_object(
@@ -206,6 +252,18 @@ class RepoManager:
         self._provided = provided
 
     async def add_or_get_repo(self, repo_name, url, pull_args, graph_metadata):
+        """
+        Adds the argument repo to the set of repos managed, if the repo hasn't been added before.
+        In either case, return the appropriate ComponentRepo instance.
+
+        Args:
+            repo_name (str): name to use for the repo
+            url (str): URL that the helm repo is hosted at
+            pull_args (utils.classes.SubprocessArgs): Arguments used to access the repo.
+                                                      Generally includes auth, etc.
+            graph_metadata (objects.base_types.Metadata): used for logging to tell which graph
+                                                          requested the update.
+        """
         repo_key = ComponentRepo.generate_key(repo_name, pull_args)
         async with self._lock:
             if repo_key not in self._repos:
@@ -218,9 +276,14 @@ class RepoManager:
         return self.get_repo(repo_key)
 
     def get_repo(self, repo_key):
+        """Gets the ComponentRepo with the key `repo_key` from the set of managed ComponentRepos"""
         return self._repos[repo_key]
 
     async def gc_graph(self, graph_metadata):
+        """
+        Performs all the necessary reference-counting garbage collection when the specified graph
+        is deleted.
+        """
         async with self._lock:
             repos = self._graph_repo_map[graph_metadata.uid]
             for repo_name, repo_key in repos:

@@ -45,6 +45,13 @@ def _match_variadic_spec_by_name(specs, name):
 
 
 class ComponentInstance(BaseElement):
+    """
+    This class contains the functionality for a single component instance within a graph.
+
+    This is primarily validation within the component instance, any (un)deployment tasks that
+    can be fully contained within this instance, and passing necessary information
+    (such as helmfile configs) back to the parent graph object.
+    """
     def __init__(self, metadata, body, graph_metadata, comp_chart, flows, needs=None,
                  aux_chart=None,
                  deployment_kwargs=None):
@@ -109,6 +116,21 @@ class ComponentInstance(BaseElement):
         return self._needs
 
     async def validate(self, validate_specs=True):
+        """
+        Raises a `ValidationError` if the component is invalid. This call must be made
+        before any function with the `@required_validated` decorator is called.
+
+        Args:
+            validate_specs (Bool):
+                True -> Pull the helm chart for this component and validate with all the
+                        Rampart component specification there. This may be expensive,
+                        so only use this flag when time is not of the essence. For example,
+                        validating webhooks have a non-bypassable timeout limit
+                False -> Do not pull the helm chart
+
+        Raises:
+            ValidationError: If the component is invalid
+        """
         if validate_specs:
             await self._chart.validate()
             if self._aux_chart:
@@ -121,6 +143,13 @@ class ComponentInstance(BaseElement):
             raise ValidationError({"'rampart-flows' is not allowed as a component name"})
 
         async def _validate_edges(target: dict, target_spec: dict):
+            """
+            Validates a dictionary of edges
+
+            Args:
+                target (dict): dictionary mapping edge names to edge configurations
+                target_spec (dict): dictionary mapping edge names to objects.BaseEdgeSpecs
+            """
             for name, edge in target.items():
                 io_type = edge.type
                 flow = edge.flow
@@ -187,8 +216,16 @@ class ComponentInstance(BaseElement):
 
     @require_validated
     async def to_deployment_yaml(self, workdir):
+        """
+        Creates the helmfile files for the edges, returns the helmfile configurations for deploying
+        this component chart, and returns a list of tasks for deploying edges that the graph will
+        need to see through to completion
+        """
         edge_release_yaml, edge_tasks = await self.create_edges(workdir, self._edges_helm_chart)
         # TODO: Add unit tests
+        # A dictionary of values that are passed to the component helm charts.
+        # The components may use them as {{ .Values.rampart.namespace }}
+        # or in subcharts as             {{ .Values.global.rampart.namespace}}
         helm_edge_yamls = {"rampart": {
             "inputs": {},
             "outputs": {},
@@ -224,6 +261,9 @@ class ComponentInstance(BaseElement):
 
     @require_validated
     def _gen_aux_chart(self):
+        """
+        Creates a chart for auxiliary charts that are attached onto components.
+        """
         aux_chart_yaml = None
         if self._aux_chart:
             aux_values = self.body["auxConfig"]
@@ -237,6 +277,10 @@ class ComponentInstance(BaseElement):
 
     @require_validated
     async def deploy_sub_namespace(self, base_namespace, owner_reference):
+        """
+        Deploys the namespace for this component,
+        and sets up all the necessary ownerReferences for automatic deletion later
+        """
         self._logger.info(
             ("deploying subnamespace for Component "
              f"{self.metadata.namespace.kubernetes_view}/"
@@ -249,6 +293,16 @@ class ComponentInstance(BaseElement):
 
     @require_validated
     def _get_edge_helm_yamls(self):
+        """
+        Returns the configurations for helmfile to use to deploy the edges for this component.
+        Includes:
+            * The list of kubernetes objects that need to be created directly
+            * The mutation preset that Rampart will use to modify component pods to attach edges
+            * ConfigMaps for the edges
+            * Hooks for the caller to finish for modifying deployed objects
+
+        See src/graph/base_component_chart/templates/edges.yaml for where they are used
+        """
         # TODO: Add unit tests
         edges = list(itertools.chain(self._inputs.values(), self._outputs.values()))
         k8s_objects = []
@@ -262,10 +316,13 @@ class ComponentInstance(BaseElement):
             post_deploy_hooks.extend(edge.post_deploy_hooks(self.namespace, seen_flows))
             recursive_merge(edge.create_pod_preset_values(seen_flows), preset, merge_list=True)
             seen_flows.add(edge.flow)
+
+            # Used by the liveness service
             config_map_body.append(
                 {"name": edge.name.rampart_view,
                  "type": str(edge.type), "part": str(edge.part)})
 
+        # Attach config maps for the liveness services, so they can see the graph topology
         edge_config_map = config_map_template(
             self.name, self.namespace.name,
             {"component": self.name.kubernetes_view, "edges": yaml.dump(config_map_body)})
@@ -279,6 +336,7 @@ class ComponentInstance(BaseElement):
 
     @require_validated
     async def _check_helm_modified(self, filename, edges_helm_name, helm_chart):
+        """Determines if upgrading would result in changes to the cluster"""
         helm_diff_args = [
             "helm", "diff", "upgrade", "-n",
             self.namespace.name.kubernetes_view, edges_helm_name, helm_chart,
@@ -292,6 +350,10 @@ class ComponentInstance(BaseElement):
 
     @require_validated
     async def create_edges(self, workdir, helm_chart):
+        """
+        Writes helmfile configurations required to deploy the edges for this instance and
+        creates hooks for the controller to run after the edges have been deployed.
+        """
         # TODO: Add unit tests
         edge_yaml, hooks = self._get_edge_helm_yamls()
         async with aiofiles.open(VOLUME_FLOW_LIVENESS_PATH, "r") as f:
@@ -317,15 +379,19 @@ class ComponentInstance(BaseElement):
             "values": [filename]}
         helm_chart = os.path.join(workdir, helm_chart)
         filename = self._edge_helm_file
+        # if the edge is modified, we will need to redeploy all the pods in the component namespace
+        # so that they can pick up the changes.
         self._modified_edge = await self._check_helm_modified(filename, helm_name, helm_chart)
         return helmfile_yaml, hooks
 
     @require_validated
     async def deploy(self):
+        """Actual deployment is provided by the `Graph` class"""
         pass
 
     @require_validated
     async def teardown(self, base_namespace):
+        """Deletes/Undeploys any cluster resources specific for this component instance"""
         delete_args = [
             "helm", "-n", self.namespace.name.kubernetes_view,  "uninstall", "component"]
         await deployment_util.optional_subprocess(self._graph_metadata, False, None, *delete_args)

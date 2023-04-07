@@ -1,5 +1,13 @@
 # Copyright 2023 Petuum, Inc. All Rights Reserved.
 
+"""
+Provides endpoints for an individual flow that the graph_service.run_app module can
+query. Generally these endpoints involve retreiving the actual data from volume
+and repo flows, which involves mounting PVC's for the flows. For this reason it is
+not feasible to have this functionality performed by the main graph_service module,
+as that is only deployed once on the cluster.
+"""
+
 import asyncio
 import os
 import tempfile
@@ -142,6 +150,7 @@ async def check_bare_clone(repo_dir):
 
 @app.get(git_metadata_endpoint)
 async def get_git_metadata(flow_title):
+    """Returns all the relevant branch and tag information about a flow"""
     repo_dir = os.path.join(root_dir, flow_title)
     is_bare_clone = await check_bare_clone(repo_dir)
     if is_bare_clone:
@@ -163,6 +172,7 @@ async def get_git_metadata(flow_title):
 
 @app.get(git_health_check)
 async def git_health_check(flow_title):
+    """Check if the git flow is working"""
     repo_dir = os.path.join(root_dir, flow_title)
     is_bare_clone = await check_bare_clone(repo_dir)
     if is_bare_clone:

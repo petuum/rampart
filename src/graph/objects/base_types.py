@@ -46,6 +46,19 @@ class BaseElement(ABC):
 
 @total_ordering
 class KubernetesName():
+    """
+    This class contains functionality for names of objects that can exist both within and outside
+    kubernetes.
+
+    In particular, kubernetes expects dashes for names, whereas we use underscores outside of
+    kubernetes. This class then lets us store a canonical version of the name and then lets us
+    easily get both views.
+
+    We also add functionaly to use this as a key in a dictionary, to be sorted, etc.
+
+    The name argument itself can be a string or another KubernetesName object. In the latter case,
+    the fields are copied, creating an equal but different KubernetesName instance.
+    """
     def __init__(self, name):
         if isinstance(name, KubernetesName):
             self._original_view = name.original_view
@@ -92,6 +105,16 @@ class KubernetesName():
 
 
 class Metadata():
+    """
+    This class contains the functionality for the key metadata used to identify kubernetes objects.
+    In particular, it stores:
+
+    name
+    namespace (optional)
+    uid
+
+    namespace and name are converted to KubernetesName instances if they are not so already
+    """
     def __init__(self, namespace, name, uid):
         if isinstance(namespace, Metadata):
             self._namespace = namespace

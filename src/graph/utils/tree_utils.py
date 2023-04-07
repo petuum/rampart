@@ -1,7 +1,12 @@
 # Copyright 2023 Petuum, Inc. All Rights Reserved.
 
 def recursive_merge(source, destination, merge_list=False):
-    """destination is modified"""
+    """
+    Given a nested structure of dictionary and lists, recursively merge
+    `source` into `destination`. If `merge_list` is true, lists are merged
+    instead of replaced.
+
+    `destination` is modified"""
     for key, value in source.items():
         if (key in destination and type(value) == dict
                 and type(destination[key]) == dict):

@@ -1,5 +1,13 @@
 # Copyright 2023 Petuum, Inc. All Rights Reserved.
 
+"""
+Provides a service to determine the health of a volume flow for a component.
+
+Determining whether a volume flow is working is more than just determining that the appropriate
+volume claim is mounted. We must also test that we can reach all of the other components that
+this one should be connected to.
+"""
+
 import glob
 import os
 import yaml
@@ -14,6 +22,7 @@ INPUT_LIVENESS_PATH = "/input/{edge}"
 
 
 def get_edges():
+    """Parses .RAMPART/edges.yaml in a volume flow to return the edges for this component"""
     with open("/.RAMPART/edges.yaml", "r") as f:
         edges_yaml = yaml.safe_load(f)
     outputs = set()
@@ -29,6 +38,7 @@ def get_edges():
 
 
 def get_component():
+    """Parses .RAMPART/edges.yaml in a volume flow to return the current component"""
     with open("/.RAMPART/component.yaml", "r") as f:
         return f.readline().strip()
 
@@ -39,6 +49,11 @@ component = get_component()
 
 
 def write(path, edge_name):
+    """
+    Writes to a file in .RAMPART for this component and the provided edge_name.
+    If this file is written to, then other services knows that this component can write
+    to the flow.
+    """
     os.makedirs(f"{path}/.RAMPART", exist_ok=True)
     os.makedirs(f"{path}/.RAMPART/{component}", exist_ok=True)
     with open(f"{path}/.RAMPART/{component}/{edge_name}.in", "w") as f:
@@ -47,6 +62,10 @@ def write(path, edge_name):
 
 
 async def read(path):
+    """
+    Reads all files that this component has access to for the volume flow defined
+    by `path`
+    """
     path = f"{path}/.RAMPART/"
     paths = glob.glob(f"{path}**/*.in", recursive=True)
     found = set()
@@ -64,6 +83,10 @@ async def read(path):
 
 
 def create_output_liveness(path, edge_name):
+    """
+    Writes to a file on the flow for a given edge,
+    and returns a handler that we can later call to check that we did write
+    """
     path = write(path, edge_name)
 
     async def handler():
@@ -77,10 +100,10 @@ def create_output_liveness(path, edge_name):
     return handler
 
 
+# Write to all outputs and store their handlers from `create_output_liveness```
 output_handlers = {}
 
 outputs, inputs = get_edges()
-
 for edge_name in outputs:
     path = os.environ[f"RAMPART_OUTPUT_{edge_name}"]
     output_handlers[edge_name] = create_output_liveness(path, edge_name)
@@ -88,6 +111,9 @@ for edge_name in outputs:
 
 @app.get(OUTPUT_LIVENESS_PATH)
 async def handle_output(edge):
+    """
+    Use the handler created on start to check that we can write to a given output edge
+    """
     if edge not in outputs:
         return HTTPException(status_code=404, detail="Edge not found")
     handler = output_handlers[edge]
@@ -96,6 +122,9 @@ async def handle_output(edge):
 
 @app.get(INPUT_LIVENESS_PATH)
 async def handle_input(edge):
+    """
+    Read from all the available edges on the flow to return which ones we can read from
+    """
     print(f"edge: {edge}")
     print(f"inputs: {inputs}")
     if edge not in inputs:
