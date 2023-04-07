@@ -10,54 +10,35 @@ vendors and on-prem datacenters.
 ```mermaid
 flowchart
 subgraph k8s[Kubernetes cluster]
-  k8sapi["(kubernetes control plane)<br/>kube-apiserver<br/><br/>"]
-  click k8sapi "https://kubernetes.io/docs/concepts/overview/components/#control-plane-components"
+  k8sapi[<a href='https://kubernetes.io/docs/concepts/overview/components/#control-plane-components'>kubernetes control plane</a><br/>kube-apiserver<br/><br/>]
   subgraph rampart[Rampart system components]
-    rgc[rampart-graph-controller]
-    click rgc "https://github.com/petuum/rampart/blob/develop/src/graph/controller.py"
-    rcw[rampart-conversion-webhook]
-    click rcw "https://github.com/petuum/rampart/blob/develop/src/graph/validator.py"
-    rmw[rampart-mutating-webhook]
-    click rmw "https://github.com/petuum/rampart/tree/develop/src/mutating_webhook"
-    rvw[rampart-validating-webhook]
-    click rvw "https://github.com/petuum/rampart/blob/develop/src/graph/validator.py"
-    rbe[rampart-backend-service]
-    click rbe "https://github.com/petuum/rampart/tree/develop/src/graph_service"
-    subgraph rig["Rampart infra graph"]
-      api6[apisix-gateway]
-      click api6 "https://github.com/petuum/rampart-apisix-chart"
-      aic[apisix-ingress-controller]
-      click aic "https://github.com/petuum/rampart-apisix-chart"
-      adash[apisix-dashboard]
-      click adash "https://github.com/petuum/rampart-apisix-chart"
-      grafana
-      click grafana "https://github.com/petuum/rampart-grafana"
-      kuberay[kuberay-operator]
-      click kuberay "https://github.com/petuum/rampart-kuberay-operator"
-      rui[rampart-ui]
-      click rui "https://github.com/petuum/rampart-ui-chart"
-      rdash[rampart-dashboard]
-      click rdash "https://github.com/petuum/rampart-k8s-dashboard"
+    rgc[<a href='https://github.com/petuum/rampart/blob/develop/src/graph/controller.py'>rampart-graph-controller</a>]
+    rcw[<a href='https://github.com/petuum/rampart/blob/develop/src/graph/validator.py'>rampart-conversion-webhook</a>]
+    rmw[<a href='https://github.com/petuum/rampart/tree/develop/src/mutating_webhook'>rampart-mutating-webhook</a>]
+    rvw[<a href='https://github.com/petuum/rampart/blob/develop/src/graph/validator.py'>rampart-validating-webhook</a>]
+    rbe[<a href='https://github.com/petuum/rampart/tree/develop/src/graph_service'>rampart-backend-service</a>]
+    subgraph rig[Rampart infra graph]
+      api6[<a href='https://github.com/petuum/rampart-apisix-chart'>apisix-gateway</a>]
+      aic[<a href='https://github.com/petuum/rampart-apisix-chart'>apisix-ingress-controller</a>]
+      adash[<a href='https://github.com/petuum/rampart-apisix-chart'>apisix-dashboard</a>]
+      grafana[<a href='https://github.com/petuum/rampart-grafana'>grafana</a>]
+      kuberay[<a href='https://github.com/petuum/rampart-kuberay-operator'>kuberay-operator</a>]
+      rui[<a href='https://github.com/petuum/rampart-ui-chart'>rampart-ui</a>]
+      rdash[<a href='https://github.com/petuum/rampart-k8s-dashboard'>rampart-dashboard</a>]
       aic -- syncs --> api6
       adash -- manages --> api6
     end
     subgraph rdeps[Rampart system dependencies]
-      hnc[hnc-manager]
-      click hnc "https://github.com/kubernetes-sigs/hierarchical-namespaces"
-      nfs[nfs-subdir-external-provisioner]
-      click nfs "https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner"
+      hnc[<a href='https://github.com/kubernetes-sigs/hierarchical-namespaces'>hnc-manager</a>]
+      nfs[<a href='https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner'>nfs-subdir-external-provisioner</a>]
     end
   end
   subgraph rugs["Rampart (user) graphs"]
-    bup[batch-uploader]
-    click bup "https://github.com/petuum/rampart-batch-uploader"
-    bex[batch-executor]
-    click bex "https://github.com/petuum/rampart-batch-executor"
-    gs[generic-service]
-    click gs "https://github.com/petuum/rampart-generic-service"
+    bup[<a href='https://github.com/petuum/rampart-batch-uploader'>batch-uploader</a>]
+    bex[<a href='https://github.com/petuum/rampart-batch-executor'>batch-executor</a>]
+    gs[<a href='https://github.com/petuum/rampart-generic-service'>generic-service</a>]
     other[ohter components...]
-    flows["(flows)"<br/>file volume<br/>repository<br/>...]
-    click flows "https://github.com/petuum/rampart/blob/develop/src/graph/objects/edge.py"
+    flows[<a href='https://github.com/petuum/rampart/blob/develop/src/graph/objects/edge.py'>flows</a><br/>file volume<br/>repository<br/>...]
     bup <--> flows
     bex <--> flows
     gs <--> flows
@@ -97,7 +78,9 @@ k8sclient <-- auth --> oidc
 api6 <-- auth --> oidc
 ```
 
-Note, the rampart system components are linked to their respective repositories.
+Note, some of the links, e.g., components in rampart infra graph and
+rampart (user) graphs, might return 404, until their open source work is
+complete.
 
 ## Typical rampart graph lifecyle sequences
 ```mermaid
