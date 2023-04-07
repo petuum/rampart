@@ -11,53 +11,53 @@ vendors and on-prem datacenters.
 flowchart
 subgraph k8s[Kubernetes cluster]
   k8sapi["(kubernetes control plane)<br/>kube-apiserver<br/><br/>"]
-  click k8sapi "https://kubernetes.io/docs/concepts/overview/components/#control-plane-components"
+  click k8sapi "https://kubernetes.io/docs/concepts/overview/components/#control-plane-components" _blank
   subgraph rampart[Rampart system components]
     rgc[rampart-graph-controller]
-    click rgc "https://github.com/petuum/rampart/blob/develop/src/graph/controller.py"
+    click rgc "https://github.com/petuum/rampart/blob/develop/src/graph/controller.py" _blank
     rcw[rampart-conversion-webhook]
-    click rcw "https://github.com/petuum/rampart/blob/develop/src/graph/validator.py"
+    click rcw "https://github.com/petuum/rampart/blob/develop/src/graph/validator.py" _blank
     rmw[rampart-mutating-webhook]
-    click rmw "https://github.com/petuum/rampart/tree/develop/src/mutating_webhook"
+    click rmw "https://github.com/petuum/rampart/tree/develop/src/mutating_webhook" _blank
     rvw[rampart-validating-webhook]
-    click rvw "https://github.com/petuum/rampart/blob/develop/src/graph/validator.py"
+    click rvw "https://github.com/petuum/rampart/blob/develop/src/graph/validator.py" _blank
     rbe[rampart-backend-service]
-    click rbe "https://github.com/petuum/rampart/tree/develop/src/graph_service"
+    click rbe "https://github.com/petuum/rampart/tree/develop/src/graph_service" _blank
     subgraph rig["Rampart infra graph"]
       api6[apisix-gateway]
-      click api6 "https://github.com/petuum/rampart-apisix-chart"
+      click api6 "https://github.com/petuum/rampart-apisix-chart" _blank
       aic[apisix-ingress-controller]
-      click aic "https://github.com/petuum/rampart-apisix-chart"
+      click aic "https://github.com/petuum/rampart-apisix-chart" _blank
       adash[apisix-dashboard]
-      click adash "https://github.com/petuum/rampart-apisix-chart"
+      click adash "https://github.com/petuum/rampart-apisix-chart" _blank
       grafana
-      click grafana "https://github.com/petuum/rampart-grafana"
+      click grafana "https://github.com/petuum/rampart-grafana" _blank
       kuberay[kuberay-operator]
-      click kuberay "https://github.com/petuum/rampart-kuberay-operator"
+      click kuberay "https://github.com/petuum/rampart-kuberay-operator" _blank
       rui[rampart-ui]
-      click rui "https://github.com/petuum/rampart-ui-chart"
+      click rui "https://github.com/petuum/rampart-ui-chart" _blank
       rdash[rampart-dashboard]
-      click rdash "https://github.com/petuum/rampart-k8s-dashboard"
+      click rdash "https://github.com/petuum/rampart-k8s-dashboard" _blank
       aic -- syncs --> api6
       adash -- manages --> api6
     end
     subgraph rdeps[Rampart system dependencies]
       hnc[hnc-manager]
-      click hnc "https://github.com/kubernetes-sigs/hierarchical-namespaces"
+      click hnc "https://github.com/kubernetes-sigs/hierarchical-namespaces" _blank
       nfs[nfs-subdir-external-provisioner]
-      click nfs "https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner"
+      click nfs "https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner" _blank
     end
   end
   subgraph rugs["Rampart (user) graphs"]
     bup[batch-uploader]
-    click bup "https://github.com/petuum/rampart-batch-uploader"
+    click bup "https://github.com/petuum/rampart-batch-uploader" _blank
     bex[batch-executor]
-    click bex "https://github.com/petuum/rampart-batch-executor"
+    click bex "https://github.com/petuum/rampart-batch-executor" _blank
     gs[generic-service]
-    click gs "https://github.com/petuum/rampart-generic-service"
+    click gs "https://github.com/petuum/rampart-generic-service" _blank
     other[ohter components...]
     flows["(flows)"<br/>file volume<br/>repository<br/>...]
-    click flows "https://github.com/petuum/rampart/blob/develop/src/graph/objects/edge.py"
+    click flows "https://github.com/petuum/rampart/blob/develop/src/graph/objects/edge.py" _blank
     bup <--> flows
     bex <--> flows
     gs <--> flows
