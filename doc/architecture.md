@@ -48,14 +48,14 @@ subgraph k8s[Kubernetes cluster]
   style rampart stroke-dasharray: 4 4
   style rig stroke-dasharray: 4 4
   style rugs stroke-dasharray: 4 4
-  rgc <--> k8sapi
+  rgc --> k8sapi
   k8sapi --> rcw
   k8sapi --> rmw
   k8sapi --> rvw
   rbe --> k8sapi
   rdash --> k8sapi
-  hnc <--> k8sapi
-  nfs <--> k8sapi
+  hnc --> k8sapi
+  nfs --> k8sapi
   kuberay --> k8sapi
   aic --> k8sapi
   grafana --> k8sapi
@@ -64,17 +64,19 @@ subgraph k8s[Kubernetes cluster]
   api6 --> rdash
   api6 --> grafana
   api6 -- routes --> rugs
-  rgc -. configures .-> grafana
+  rbe -. configures .-> grafana
   rvw -. validates .-> rugs
   rmw -. mutates .-> rugs
   rcw -. migrates .-> rugs
+  rgc -. deploys .-> rugs
+  rgc -. deploys .-> rig
 end
 style k8sapi stroke-dasharray: 4 4
 oidc["(oidc providers)"<br/>keycloak<br/>auth0<br/>...]
 k8sclient(("(k8s clients)"<br/>kubectl<br/>helm<br/>...)) --> k8sapi
 webclient(("(web clients)"<br/>browsers<br/>curl<br/>...)) --> api6
-k8sapi <-- auth --> oidc
-k8sclient <-- auth --> oidc
+k8sapi -- auth --> oidc
+k8sclient -- auth --> oidc
 api6 <-- auth --> oidc
 ```
 

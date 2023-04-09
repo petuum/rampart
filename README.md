@@ -67,9 +67,9 @@ Contributions are welcome! If you would like to contribute to Rampart OSS, pleas
 
 # Open Source Progress
 - [x] Rampart controller (this repo)
-- [] Rampart helm chart
-- [] Rampart GUI
-- [] Rampart components
+- [ ] Rampart helm chart
+- [ ] Rampart GUI
+- [ ] Rampart components
 
 # Developer Documentation
 See the documentation for the [Rampart architecture](doc/architecture.md), [Rampart Controller](src/graph/README.md) and [Rampart Backend Service](src/graph_service/README.md) within this repository for details.
